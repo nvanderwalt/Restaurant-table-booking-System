@@ -1,0 +1,203 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Menu - SpicyHunt Admin{% endblock %}
+{% block page_title %}Menu Management{% endblock %}
+{% block breadcrumb %}Menu{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <div class="filter-actions">
+        <div class="filter-group">
+            <label for="categoryFilter">Category:</label>
+            <select id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="APPETIZER">Appetizers</option>
+                <option value="SOUP">Soups</option>
+                <option value="SALAD">Salads</option>
+                <option value="MAIN">Main Dishes</option>
+                <option value="DESSERT">Desserts</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="availabilityFilter">Availability:</label>
+            <select id="availabilityFilter">
+                <option value="">All</option>
+                <option value="available">Available</option>
+                <option value="unavailable">Unavailable</option>
+            </select>
+        </div>
+    </div>
+    
+    <a href="{% url 'admin_menu_add' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add Menu Item
+    </a>
+</div>
+
+<div class="menu-categories-tabs">
+    <button class="category-tab active" data-category="all">All Items</button>
+    <button class="category-tab" data-category="APPETIZER">Appetizers</button>
+    <button class="category-tab" data-category="SOUP">Soups</button>
+    <button class="category-tab" data-category="SALAD">Salads</button>
+    <button class="category-tab" data-category="MAIN">Main Dishes</button>
+    <button class="category-tab" data-category="DESSERT">Desserts</button>
+</div>
+
+<div class="menu-grid">
+    {% for item in menu_items %}
+    <div class="menu-item-card" data-category="{{ item.category }}">
+        <div class="item-image">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+            <div class="no-image">
+                <i class="fas fa-utensils"></i>
+            </div>
+            {% endif %}
+            <span class="category-badge">{{ item.get_category_display }}</span>
+            {% if not item.is_available %}
+            <div class="unavailable-badge">
+                <i class="fas fa-times"></i> Unavailable
+            </div>
+            {% endif %}
+        </div>
+        <div class="item-details">
+            <h3>{{ item.name }}</h3>
+            <p class="item-price">${{ item.price }}</p>
+            <p class="item-description">{{ item.description|truncatechars:100 }}</p>
+        </div>
+        <div class="item-actions">
+            <a href="{% url 'admin_menu_edit' item.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            {% if item.is_available %}
+            <a href="{% url 'admin_menu_toggle_availability' item.id %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-eye-slash"></i> Mark Unavailable
+            </a>
+            {% else %}
+            <a href="{% url 'admin_menu_toggle_availability' item.id %}" class="btn btn-success btn-sm">
+                <i class="fas fa-eye"></i> Mark Available
+            </a>
+            {% endif %}
+            <button type="button" class="btn btn-danger btn-sm dropdown-toggle">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="dropdown-menu">
+                <a href="{% url 'admin_menu_delete' item.id %}">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+                <a href="{% url 'admin_menu_duplicate' item.id %}">
+                    <i class="fas fa-copy"></i> Duplicate
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-utensils"></i>
+        </div>
+        <h3>No Menu Items Found</h3>
+        <p>Start by adding items to your restaurant menu.</p>
+        <a href="{% url 'admin_menu_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Menu Item
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category tabs filtering
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        const menuItems = document.querySelectorAll('.menu-item-card');
+        
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.getAttribute('data-category');
+                
+                // Filter menu items
+                menuItems.forEach(item => {
+                    if (category === 'all' || item.getAttribute('data-category') === category) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Additional filtering with select boxes
+        const categoryFilter = document.getElementById('categoryFilter');
+        const availabilityFilter = document.getElementById('availabilityFilter');
+        
+        function applyFilters() {
+            const categoryValue = categoryFilter.value;
+            const availabilityValue = availabilityFilter.value;
+            
+            menuItems.forEach(item => {
+                let showItem = true;
+                
+                // Check category
+                if (categoryValue && item.getAttribute('data-category') !== categoryValue) {
+                    showItem = false;
+                }
+                
+                // Check availability
+                if (availabilityValue) {
+                    const isAvailable = !item.querySelector('.unavailable-badge');
+                    if (availabilityValue === 'available' && !isAvailable) {
+                        showItem = false;
+                    } else if (availabilityValue === 'unavailable' && isAvailable) {
+                        showItem = false;
+                    }
+                }
+                
+                item.style.display = showItem ? 'flex' : 'none';
+            });
+            
+            // Update the active category tab to reflect the filter
+            categoryTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if ((tab.getAttribute('data-category') === categoryValue) || 
+                    (categoryValue === '' && tab.getAttribute('data-category') === 'all')) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        categoryFilter.addEventListener('change', applyFilters);
+        availabilityFilter.addEventListener('change', applyFilters);
+        
+        // Dropdown toggle functionality
+        const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+        
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const dropdown = this.nextElementSibling;
+                dropdown.classList.toggle('show');
+                
+                // Close other dropdowns
+                dropdownToggles.forEach(otherToggle => {
+                    if (otherToggle !== toggle) {
+                        otherToggle.nextElementSibling.classList.remove('show');
+                    }
+                });
+            });
+        });
+        
+        // Close dropdowns when clicking elsewhere
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        });
+    });
+</script>
+{% endblock %}

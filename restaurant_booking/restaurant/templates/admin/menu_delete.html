@@ -1,0 +1,56 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Delete Menu Item - SpicyHunt Admin{% endblock %}
+{% block page_title %}Delete Menu Item{% endblock %}
+{% block breadcrumb %}<a href="{% url 'admin_menu' %}">Menu</a> <i class="fas fa-chevron-right"></i> Delete Item{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Confirm Deletion</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="alert-content">
+                <h4>Are you sure you want to delete "{{ menu_item.name }}"?</h4>
+                <p>This action cannot be undone.</p>
+            </div>
+        </div>
+        
+        <div class="menu-item-preview">
+            <div class="preview-image">
+                {% if menu_item.image %}
+                <img src="{{ menu_item.image.url }}" alt="{{ menu_item.name }}">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-utensils"></i>
+                    <p>No image</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="preview-details">
+                <h4>{{ menu_item.name }}</h4>
+                <p class="preview-category">{{ menu_item.get_category_display }}</p>
+                <p class="preview-price">${{ menu_item.price }}</p>
+                <p class="preview-description">{{ menu_item.description }}</p>
+            </div>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Yes, Delete Item
+                </button>
+                <a href="{% url 'admin_menu' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> No, Go Back
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

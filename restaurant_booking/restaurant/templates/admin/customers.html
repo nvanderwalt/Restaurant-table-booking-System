@@ -1,0 +1,137 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Customers - SpicyHunt Admin{% endblock %}
+{% block page_title %}Customer Management{% endblock %}
+{% block breadcrumb %}Customers{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <div class="search-container">
+        <form method="GET" action="{% url 'admin_customers' %}" class="search-form">
+            <div class="search-input-wrapper">
+                <input type="text" name="search" id="customerSearch" placeholder="Search by name, email, or username..." value="{{ search }}">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            {% if search %}
+            <a href="{% url 'admin_customers' %}" class="clear-search">
+                <i class="fas fa-times"></i> Clear Search
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Customer List</h3>
+        <div class="header-actions">
+            <button type="button" class="btn btn-outline" id="exportCustomers">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Joined On</th>
+                    <th>Bookings</th>
+                    <th>Last Visit</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.username }}</td>
+                    <td>{{ customer.get_full_name|default:"-" }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.date_joined|date:"M d, Y" }}</td>
+                    <td>{{ customer.bookings_count }}</td>
+                    <td>
+                        {% if customer.last_booking %}
+                        {{ customer.last_booking.date|date:"M d, Y" }}
+                        {% else %}
+                        Never
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_customer_detail' customer.id %}" class="btn-icon" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="mailto:{{ customer.email }}" class="btn-icon" title="Send Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-table">No customers found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if customers.has_other_pages %}
+    <div class="card-footer">
+        <div class="pagination">
+            {% if customers.has_previous %}
+            <a href="?page=1{% if search %}&search={{ search }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ customers.previous_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            {% endif %}
+            
+            <span class="page-info">
+                Page {{ customers.number }} of {{ customers.paginator.num_pages }}
+            </span>
+            
+            {% if customers.has_next %}
+            <a href="?page={{ customers.next_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ customers.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Export functionality
+        const exportBtn = document.getElementById('exportCustomers');
+        
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                // In a real application, this would trigger a CSV export
+                alert('Export functionality would be implemented here.');
+            });
+        }
+        
+        // Auto-focus search field if there's a search term
+        const searchInput = document.getElementById('customerSearch');
+        if (searchInput && searchInput.value) {
+            searchInput.focus();
+            // Move cursor to end of input
+            const val = searchInput.value;
+            searchInput.value = '';
+            searchInput.value = val;
+        }
+    });
+</script>
+{% endblock %}

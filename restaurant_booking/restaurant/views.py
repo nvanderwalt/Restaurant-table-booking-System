@@ -7,11 +7,65 @@ from .forms import BookingForm, UserRegistrationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate, get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 
+def custom_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            
+            if user is not None:
+                login(request, user)
+                next_url = request.POST.get('next', '')
+                
+                if next_url:
+                    return redirect(next_url)
+                elif user.role == 'admin':
+                    return redirect('admin_dashboard')
+                else:
+                    return redirect('index')
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+    
+    return render(request, 'restaurant/login.html', {
+        'form': form,
+        'next': request.GET.get('next', '')
+    })
 
 def index(request):
     return render(request, 'restaurant/index.html')
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Account created for {username}! You can now log in.')
+            return redirect('login')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'restaurant/register.html', {'form': form})
+
+# def register(request):
+#     if request.method == 'POST':
+#         form = UserRegistrationForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, f'Account created for {username}! You can now log in.')
+#             return redirect('login')
+#     else:
+#         form = UserRegistrationForm()
+#     return render(request, 'restaurant/register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
@@ -101,14 +155,14 @@ def booking_confirmation_view(request):
     return HttpResponse("Booking Confirmed!")
 
 # Add this to views.py
-def register(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! You can now log in.')
-            return redirect('login')
-    else:
-        form = UserRegistrationForm()
-    return render(request, 'restaurant/register.html', {'form': form})
+# def register(request):
+#     if request.method == 'POST':
+#         form = UserRegistrationForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, f'Account created for {username}! You can now log in.')
+#             return redirect('login')
+#     else:
+#         form = UserRegistrationForm()
+#     return render(request, 'restaurant/register.html', {'form': form})

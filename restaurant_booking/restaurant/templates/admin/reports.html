@@ -1,0 +1,601 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Reports - SpicyHunt Admin{% endblock %}
+{% block page_title %}Analytics & Reports{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
+
+{% block content %}
+<div class="report-controls">
+    <div class="report-type-selector">
+        <div class="control-label">Report Type:</div>
+        <div class="control-options">
+            <a href="{% url 'admin_reports' %}?type=bookings&period={{ period }}" class="report-type-btn {% if report_type == 'bookings' %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i> Bookings
+            </a>
+            <a href="{% url 'admin_reports' %}?type=tables&period={{ period }}" class="report-type-btn {% if report_type == 'tables' %}active{% endif %}">
+                <i class="fas fa-chair"></i> Tables
+            </a>
+            <a href="{% url 'admin_reports' %}?type=customers&period={{ period }}" class="report-type-btn {% if report_type == 'customers' %}active{% endif %}">
+                <i class="fas fa-users"></i> Customers
+            </a>
+        </div>
+    </div>
+    
+    <div class="date-range-selector">
+        <div class="control-label">Period:</div>
+        <div class="control-options">
+            <a href="{% url 'admin_reports' %}?type={{ report_type }}&period=week" class="period-btn {% if period == 'week' %}active{% endif %}">Week</a>
+            <a href="{% url 'admin_reports' %}?type={{ report_type }}&period=month" class="period-btn {% if period == 'month' %}active{% endif %}">Month</a>
+            <a href="{% url 'admin_reports' %}?type={{ report_type }}&period=year" class="period-btn {% if period == 'year' %}active{% endif %}">Year</a>
+            <a href="#" class="period-btn {% if period == 'custom' %}active{% endif %}" id="customPeriodBtn">Custom</a>
+        </div>
+        
+        <div class="custom-date-range" id="customDateRange" {% if period != 'custom' %}style="display: none;"{% endif %}>
+            <form method="GET" action="{% url 'admin_reports' %}">
+                <input type="hidden" name="type" value="{{ report_type }}">
+                <input type="hidden" name="period" value="custom">
+                <div class="date-inputs">
+                    <div class="date-input">
+                        <label for="start_date">From:</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="date-input">
+                        <label for="end_date">To:</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Specific report content based on type -->
+{% if report_type == 'bookings' %}
+<div class="report-overview-card card">
+    <div class="card-header">
+        <h3>Booking Overview</h3>
+        <div class="date-range-display">
+            {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="report-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-value">{{ total_bookings }}</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_guests }}</div>
+                <div class="stat-label">Total Guests</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value">{{ avg_bookings_per_day }}</div>
+                <div class="stat-label">Avg. Bookings/Day</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <div class="stat-value">{{ avg_guests_per_booking }}</div>
+                <div class="stat-label">Avg. Party Size</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="bookingsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="report-details-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3>Booking Status Breakdown</h3>
+        </div>
+        <div class="card-body">
+            <div class="status-chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+            
+            <div class="status-legend">
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #4caf50;"></div>
+                    <div class="legend-text">
+                        <div class="legend-label">Confirmed</div>
+                        <div class="legend-value">{{ status_counts.CONFIRMED }}</div>
+                    </div>
+                </div>
+                
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #ff9800;"></div>
+                    <div class="legend-text">
+                        <div class="legend-label">Pending</div>
+                        <div class="legend-value">{{ status_counts.PENDING }}</div>
+                    </div>
+                </div>
+                
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #f44336;"></div>
+                    <div class="legend-text">
+                        <div class="legend-label">Cancelled</div>
+                        <div class="legend-value">{{ status_counts.CANCELLED }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Popular Booking Times</h3>
+        </div>
+        <div class="card-body">
+            <div class="hours-chart-container">
+                <canvas id="hoursChart"></canvas>
+            </div>
+            
+            <div class="popular-hours-list">
+                <h4>Busiest Hours</h4>
+                <ul>
+                    {% for hour, count in popular_hours.items %}
+                    <li>
+                        <span class="hour">{{ hour }}</span>
+                        <span class="count">{{ count }} bookings</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif report_type == 'tables' %}
+<div class="report-overview-card card">
+    <div class="card-header">
+        <h3>Table Utilization</h3>
+        <div class="date-range-display">
+            {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="chart-container">
+            <canvas id="tablesChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Table Performance</h3>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    <th>Bookings</th>
+                    <th>Utilization Rate</th>
+                    <th>Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table, bookings in table_bookings.items %}
+                <tr>
+                    <td>{{ table }}</td>
+                    <td>{{ bookings }}</td>
+                    <td>{{ table_utilization|get_item:table }}%</td>
+                    <td>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: {{ table_utilization|get_item:table }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="empty-table">No table data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% elif report_type == 'customers' %}
+<div class="report-overview-card card">
+    <div class="card-header">
+        <h3>Customer Growth</h3>
+        <div class="date-range-display">
+            {{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="report-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_customers }}</div>
+                <div class="stat-label">Total Customers</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stat-value">{{ new_customers }}</div>
+                <div class="stat-label">New Customers</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-value">{{ active_customers }}</div>
+                <div class="stat-label">Active Customers</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="customersChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Top Customers</h3>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Joined</th>
+                    <th>Bookings</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in top_customers %}
+                <tr>
+                    <td>{{ customer.get_full_name|default:customer.username }}</td>
+                    <td>{{ customer.date_joined|date:"M d, Y" }}</td>
+                    <td>{{ customer.booking_count }}</td>
+                    <td>
+                        <span class="status-badge {% if customer.is_active %}status-confirmed{% else %}status-cancelled{% endif %}">
+                            {% if customer.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_customer_detail' customer.id %}" class="btn-icon" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-table">No customer data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="report-actions">
+    <button type="button" class="btn btn-primary" id="exportReport">
+        <i class="fas fa-file-export"></i> Export Report
+    </button>
+    <button type="button" class="btn btn-secondary" id="printReport">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Custom Date Range Toggle
+        const customPeriodBtn = document.getElementById('customPeriodBtn');
+        const customDateRange = document.getElementById('customDateRange');
+        
+        if (customPeriodBtn && customDateRange) {
+            customPeriodBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                customDateRange.style.display = customDateRange.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        // Export Report Button
+        const exportReportBtn = document.getElementById('exportReport');
+        if (exportReportBtn) {
+            exportReportBtn.addEventListener('click', function() {
+                alert('Export functionality would be implemented here.');
+            });
+        }
+        
+        // Print Report Button
+        const printReportBtn = document.getElementById('printReport');
+        if (printReportBtn) {
+            printReportBtn.addEventListener('click', function() {
+                window.print();
+            });
+        }
+        
+        // Charts based on report type
+        {% if report_type == 'bookings' %}
+        // Bookings Chart
+        const bookingsChartEl = document.getElementById('bookingsChart');
+        if (bookingsChartEl) {
+            const bookingsChart = new Chart(bookingsChartEl.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels|safe }},
+                    datasets: [{
+                        label: 'Bookings',
+                        data: {{ chart_data|safe }},
+                        borderColor: '#c8a97e',
+                        backgroundColor: 'rgba(200, 169, 126, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: '#c8a97e',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Bookings Over Time',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Status Breakdown Chart
+        const statusChartEl = document.getElementById('statusChart');
+        if (statusChartEl) {
+            const statusChart = new Chart(statusChartEl.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confirmed', 'Pending', 'Cancelled'],
+                    datasets: [{
+                        data: [
+                            {{ status_counts.CONFIRMED }},
+                            {{ status_counts.PENDING }},
+                            {{ status_counts.CANCELLED }}
+                        ],
+                        backgroundColor: [
+                            '#4caf50',
+                            '#ff9800',
+                            '#f44336'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+        
+        // Popular Hours Chart
+        const hoursChartEl = document.getElementById('hoursChart');
+        if (hoursChartEl) {
+            const hoursLabels = [];
+            const hoursData = [];
+            
+            {% for hour, count in popular_hours.items %}
+            hoursLabels.push('{{ hour }}');
+            hoursData.push({{ count }});
+            {% endfor %}
+            
+            const hoursChart = new Chart(hoursChartEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: hoursLabels,
+                    datasets: [{
+                        label: 'Bookings',
+                        data: hoursData,
+                        backgroundColor: '#c8a97e',
+                        borderColor: '#b89a6e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        {% elif report_type == 'tables' %}
+        // Tables Utilization Chart
+        const tablesChartEl = document.getElementById('tablesChart');
+        if (tablesChartEl) {
+            const tablesChart = new Chart(tablesChartEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: {{ chart_labels|safe }},
+                    datasets: [{
+                        label: 'Bookings',
+                        data: {{ chart_data|safe }},
+                        backgroundColor: '#c8a97e',
+                        borderColor: '#b89a6e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Table Utilization',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        {% elif report_type == 'customers' %}
+        // Customer Growth Chart
+        const customersChartEl = document.getElementById('customersChart');
+        if (customersChartEl) {
+            const customersChart = new Chart(customersChartEl.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels|safe }},
+                    datasets: [{
+                        label: 'New Customers',
+                        data: {{ chart_data|safe }},
+                        borderColor: '#c8a97e',
+                        backgroundColor: 'rgba(200, 169, 126, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: '#c8a97e',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'New Customer Signups',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

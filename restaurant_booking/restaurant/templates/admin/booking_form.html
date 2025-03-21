@@ -1,6 +1,6 @@
-{% extends 'restaurant/admin/base.html' %}
+{% extends 'admin/base.html' %}
 
-{% block title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Booking - SpicyHunt Admin{% endblock %}
+{% block title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Booking - SpicyFood Admin{% endblock %}
 {% block page_title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Booking{% endblock %}
 {% block breadcrumb %}<a href="{% url 'admin_bookings' %}">Bookings</a> <i class="fas fa-chevron-right"></i> {% if form.instance.id %}Edit Booking #{{ form.instance.id }}{% else %}Add Booking{% endif %}{% endblock %}
 

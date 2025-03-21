@@ -1,0 +1,244 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}{{ customer.username }} - SpicyFood Admin{% endblock %}
+{% block page_title %}Customer Profile{% endblock %}
+{% block breadcrumb %}<a href="{% url 'admin_customers' %}">Customers</a> <i class="fas fa-chevron-right"></i> {{ customer.username }}{% endblock %}
+
+{% block content %}
+<div class="customer-detail-grid">
+    <div class="customer-info-card card">
+        <div class="card-header">
+            <h3>Customer Information</h3>
+            <div class="customer-status">
+                {% if customer.is_active %}
+                <span class="status-badge status-confirmed">Active</span>
+                {% else %}
+                <span class="status-badge status-cancelled">Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="customer-profile">
+                <div class="customer-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="customer-name">
+                    <h3>{{ customer.get_full_name|default:customer.username }}</h3>
+                    <p class="customer-username">@{{ customer.username }}</p>
+                </div>
+            </div>
+            
+            <div class="customer-details">
+                <div class="detail-row">
+                    <span class="detail-icon"><i class="fas fa-envelope"></i></span>
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">{{ customer.email }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <span class="detail-label">Joined:</span>
+                    <span class="detail-value">{{ member_since|date:"F j, Y" }} ({{ days_as_member }} days ago)</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-icon"><i class="fas fa-bookmark"></i></span>
+                    <span class="detail-label">Total Bookings:</span>
+                    <span class="detail-value">{{ bookings_count }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-icon"><i class="fas fa-users"></i></span>
+                    <span class="detail-label">Average Party Size:</span>
+                    <span class="detail-value">{{ avg_party_size }} guests</span>
+                </div>
+                
+                {% if favorite_table %}
+                <div class="detail-row">
+                    <span class="detail-icon"><i class="fas fa-star"></i></span>
+                    <span class="detail-label">Favorite Table:</span>
+                    <span class="detail-value">{{ favorite_table }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="customer-actions">
+                <a href="mailto:{{ customer.email }}" class="btn btn-primary">
+                    <i class="fas fa-envelope"></i> Send Email
+                </a>
+                <a href="{% url 'admin_booking_add' %}?user={{ customer.id }}" class="btn btn-success">
+                    <i class="fas fa-calendar-plus"></i> Create Booking
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="customer-stats-card card">
+        <div class="card-header">
+            <h3>Booking Statistics</h3>
+        </div>
+        <div class="card-body">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value">{{ bookings_count }}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-value">{{ upcoming_bookings }}</div>
+                    <div class="stat-label">Upcoming</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-value">{{ completed_bookings }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-value">{{ cancelled_bookings }}</div>
+                    <div class="stat-label">Cancelled</div>
+                </div>
+            </div>
+            
+            <div class="booking-history-chart">
+                <canvas id="bookingHistoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="customer-bookings-card card">
+    <div class="card-header">
+        <h3>Recent Bookings</h3>
+        <a href="{% url 'admin_bookings' %}?user={{ customer.id }}" class="view-all-link">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Table</th>
+                    <th>Guests</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td>{{ booking.date|date:"M d, Y" }}</td>
+                    <td>{{ booking.time|time:"g:i A" }}</td>
+                    <td>{{ booking.table }}</td>
+                    <td>{{ booking.number_of_guests }}</td>
+                    <td>
+                        <span class="status-badge status-{{ booking.status|lower }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_booking_detail' booking.id %}" class="btn-icon" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-table">No bookings found for this customer</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simple chart for booking history demonstration
+        const ctx = document.getElementById('bookingHistoryChart').getContext('2d');
+        
+        // For demonstration, we're using placeholder data
+        // In a real application, you would pass this data from the backend
+        const bookingChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Bookings',
+                    data: [
+                        {{ cancelled_bookings }}, 
+                        {{ upcoming_bookings }}, 
+                        {{ completed_bookings }}, 
+                        Math.round(Math.random() * 5),
+                        Math.round(Math.random() * 5),
+                        Math.round(Math.random() * 5)
+                    ],
+                    borderColor: '#c8a97e',
+                    backgroundColor: 'rgba(200, 169, 126, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: '#c8a97e',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Booking History',
+                        font: {
+                            size: 16
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

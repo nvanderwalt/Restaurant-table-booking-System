@@ -27,12 +27,14 @@
                 <form method="POST" class="auth-form">
                     {% csrf_token %}
                     
-                    {% if form.errors %}
+                    {% if messages %}
                     <div class="error-container">
                         <div class="error-icon">
                             <i class="fas fa-exclamation-circle"></i>
                         </div>
-                        <p>Your username and password didn't match. Please try again.</p>
+                        {% for message in messages %}
+                            <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                        {% endfor %}
                     </div>
                     {% endif %}
                     
@@ -54,7 +56,7 @@
                     </div>
                     
                     <div class="form-check">
-                        <input type="checkbox" id="rememberMe">
+                        <input type="checkbox" id="rememberMe" name="remember_me">
                         <label for="rememberMe">Remember me</label>
                     </div>
                     
@@ -84,7 +86,7 @@
                         <li><i class="fas fa-check-circle"></i> Seamless booking experience</li>
                     </ul>
                     <div class="auth-decoration">
-                        <img src="https://i.pinimg.com/736x/03/e9/84/03e984afeb479490cab605c39bfdac03.jpg" alt="Elegant Dish">
+                        <img src="{% static 'restaurant/images/elegant-dish.jpg' %}" alt="Elegant Dish">
                     </div>
                 </div>
             </div>

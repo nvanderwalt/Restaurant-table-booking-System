@@ -1,9 +1,30 @@
 from django.utils import timezone
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from datetime import time
 
+class CustomUser(AbstractUser):
+    ADMIN = 'admin'
+    STAFF = 'staff'
+    CUSTOMER = 'customer'
+
+    ROLE_CHOICES = [
+        (ADMIN, 'Admin'),
+        (STAFF, 'Staff'),
+        (CUSTOMER, 'Customer'),
+    ]
+
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default=CUSTOMER,
+    )
+
+    def __str__(self):
+        return self.username
+    
 class Table(models.Model):
     number = models.IntegerField(unique=True)
     capacity = models.IntegerField()
@@ -37,7 +58,7 @@ class Booking(models.Model):
         ('CANCELLED', 'Cancelled'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField(default=time(12, 0))

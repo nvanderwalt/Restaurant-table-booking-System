@@ -1,0 +1,200 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Menu Item - SpicyHunt Admin{% endblock %}
+{% block page_title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Menu Item{% endblock %}
+{% block breadcrumb %}<a href="{% url 'admin_menu' %}">Menu</a> <i class="fas fa-chevron-right"></i> {% if form.instance.id %}Edit{% else %}Add{% endif %} Item{% endblock %}
+
+{% block content %}
+<div class="card menu-form-card">
+    <div class="card-header">
+        <h3>{% if form.instance.id %}Edit{% else %}Add{% endif %} Menu Item</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data" class="menu-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="error-content">
+                    {{ form.non_field_errors }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="form-grid">
+                <div class="main-form-section">
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">
+                            <i class="fas fa-utensils"></i> Item Name
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="field-error">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.category.id_for_label }}">
+                                <i class="fas fa-tag"></i> Category
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="field-error">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.price.id_for_label }}">
+                                <i class="fas fa-dollar-sign"></i> Price
+                            </label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                            <div class="field-error">{{ form.price.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">
+                            <i class="fas fa-align-left"></i> Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="field-error">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group availability-toggle">
+                        <label class="switch-label">
+                            <span><i class="fas fa-eye"></i> Available on Menu</span>
+                            {{ form.is_available }}
+                            <span class="switch">
+                                <span class="slider"></span>
+                            </span>
+                        </label>
+                        {% if form.is_available.errors %}
+                        <div class="field-error">{{ form.is_available.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="image-upload-section">
+                    <div class="form-group">
+                        <label for="{{ form.image.id_for_label }}">
+                            <i class="fas fa-image"></i> Item Image
+                        </label>
+                        
+                        <div class="image-preview-container">
+                            <div class="image-preview" id="imagePreview">
+                                {% if form.instance.image %}
+                                <img src="{{ form.instance.image.url }}" alt="{{ form.instance.name }}">
+                                {% else %}
+                                <div class="no-image">
+                                    <i class="fas fa-camera"></i>
+                                    <p>No image uploaded</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="image-upload-controls">
+                                <label for="{{ form.image.id_for_label }}" class="upload-btn">
+                                    <i class="fas fa-upload"></i> 
+                                    {% if form.instance.image %}Change Image{% else %}Upload Image{% endif %}
+                                </label>
+                                {{ form.image }}
+                                {% if form.instance.image %}
+                                <button type="button" class="btn btn-danger btn-sm" id="removeImage">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                                <input type="hidden" name="remove_image" id="removeImageField" value="false">
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if form.image.errors %}
+                        <div class="field-error">{{ form.image.errors }}</div>
+                        {% endif %}
+                        
+                        <div class="upload-help">
+                            <p>Recommended image size: 800x600 pixels</p>
+                            <p>Maximum file size: 5MB</p>
+                            <p>Supported formats: JPG, PNG</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if form.instance.id %}Update{% else %}Save{% endif %} Menu Item
+                </button>
+                <a href="{% url 'admin_menu' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image preview functionality
+        const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImage');
+        const removeImageField = document.getElementById('removeImageField');
+        
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                    
+                    // If there's a remove image button, show it
+                    if (removeImageBtn) {
+                        removeImageBtn.style.display = 'inline-block';
+                    }
+                    
+                    // Reset the remove image field if it exists
+                    if (removeImageField) {
+                        removeImageField.value = 'false';
+                    }
+                }
+            });
+        }
+        
+        // Remove image functionality
+        if (removeImageBtn && removeImageField) {
+            removeImageBtn.addEventListener('click', function() {
+                // Clear the file input
+                imageInput.value = '';
+                
+                // Update the preview
+                imagePreview.innerHTML = `
+                    <div class="no-image">
+                        <i class="fas fa-camera"></i>
+                        <p>No image uploaded</p>
+                    </div>
+                `;
+                
+                // Set the remove image field to true
+                removeImageField.value = 'true';
+                
+                // Hide the remove button
+                this.style.display = 'none';
+            });
+        }
+    });
+</script>
+{% endblock %}

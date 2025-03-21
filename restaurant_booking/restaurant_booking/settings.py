@@ -74,7 +74,7 @@ WSGI_APPLICATION = 'restaurant_booking.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'restaurant_db',  
+        'NAME': 'restaurantDB',  
         'USER': 'postgres',   
         'PASSWORD': '1234',  
         'HOST': 'localhost',      
@@ -128,9 +128,13 @@ MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT = BASE_DIR / 'media'
 
+LOGIN_REDIRECT_URL = 'admin_dashboard'
+
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
 LOGIN_URL = 'login'
+
+AUTH_USER_MODEL = 'restaurant.CustomUser'
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {

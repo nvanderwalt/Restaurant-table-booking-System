@@ -1,0 +1,129 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Table {{ table.number }} - SpicyHunt Admin{% endblock %}
+{% block page_title %}Table {{ table.number }} Details{% endblock %}
+{% block breadcrumb %}<a href="{% url 'admin_tables' %}">Tables</a> <i class="fas fa-chevron-right"></i> Table {{ table.number }}{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <div class="action-buttons">
+        <a href="{% url 'admin_table_edit' table.id %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Table
+        </a>
+        <a href="{% url 'admin_table_delete' table.id %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+
+<div class="table-detail-grid">
+    <div class="table-main-card card">
+        <div class="card-header">
+            <h3>Table Information</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-visual-container">
+                <div class="table-visual">
+                    <div class="table-shape">
+                        <span>{{ table.number }}</span>
+                    </div>
+                    <div class="table-capacity-badge">
+                        {{ table.capacity }} <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-detail-info">
+                <div class="detail-section">
+                    <h4>Table Details</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Table Number</span>
+                            <span class="detail-value">{{ table.number }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Capacity</span>
+                            <span class="detail-value">{{ table.capacity }} guests</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value status-available">Available</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Utilization Statistics</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Total Bookings</span>
+                            <span class="detail-value">{{ total_bookings }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Bookings This Month</span>
+                            <span class="detail-value">{{ bookings_this_month }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Utilization Rate</span>
+                            <span class="detail-value">{{ utilization_rate }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-bookings-card card">
+        <div class="card-header">
+            <h3>Upcoming Bookings</h3>
+        </div>
+        <div class="card-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Customer</th>
+                        <th>Guests</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in upcoming_bookings %}
+                    <tr>
+                        <td>{{ booking.date|date:"M d, Y" }}</td>
+                        <td>{{ booking.time|time:"g:i A" }}</td>
+                        <td>{{ booking.user.get_full_name|default:booking.user.username }}</td>
+                        <td>{{ booking.number_of_guests }}</td>
+                        <td>
+                            <span class="status-badge status-{{ booking.status|lower }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'admin_booking_detail' booking.id %}" class="btn-icon" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-table">No upcoming bookings for this table</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if upcoming_bookings %}
+        <div class="card-footer">
+            <a href="{% url 'admin_bookings' %}?table={{ table.id }}" class="view-all-link">
+                View All Bookings <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
