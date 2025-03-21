@@ -22,5 +22,3 @@ python manage.py createsuperuser
 # Run the server
 python manage.py runserver
 
-
-https://claude.ai/chat/0bc58563-cdc5-41f6-b008-29e4b35607ae
