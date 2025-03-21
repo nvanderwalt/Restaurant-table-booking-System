@@ -30,10 +30,6 @@ username = dominic
 Email address: dominicmburu034@gmail.com
 password = 1234
 
-
-https://claude.ai/chat/0bc58563-cdc5-41f6-b008-29e4b35607ae
-
-
 migrates
 python manage.py makemigrations restaurant
 # First apply the content types migrations (which the auth app depends on)
