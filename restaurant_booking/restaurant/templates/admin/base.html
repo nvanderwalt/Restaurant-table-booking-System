@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SpicyFood Admin{% endblock %}</title>
+    <link rel="icon" href="https://i.pinimg.com/736x/94/bf/34/94bf3444f7683e20d2b78693f09e9c31.jpg" type="image/x-icon">
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -29,7 +30,7 @@
                 </div>
                 <div class="user-info">
                     <h4>{{ request.user.get_full_name|default:request.user.username }}</h4>
-                    <span class="user-role">Administrator</span>
+                    <span class="user-role">{{ request.user.get_role_display }}</span>
                 </div>
             </div>
             

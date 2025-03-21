@@ -15,7 +15,7 @@
             <p>Today's Reservations</p>
         </div>
         <div class="stat-progress">
-            <!-- <div class="progress-bar" style="width: {{ today_bookings_percent }}%"></div> -->
+            <div class="progress-bar" style="width: {{ today_bookings_percent }}%"></div>
         </div>
     </div>
     
@@ -28,7 +28,7 @@
             <p>Guests Today</p>
         </div>
         <div class="stat-progress">
-            <!-- <div class="progress-bar" style="width: {{ guests_percent }}%"></div> -->
+            <div class="progress-bar" style="width: {{ guests_percent }}%"></div>
         </div>
     </div>
     
@@ -54,7 +54,7 @@
             <p>New Customers This Month</p>
         </div>
         <div class="stat-progress">
-            <!-- <div class="progress-bar" style="width: {{ new_customers_percent }}%"></div> -->
+            <div class="progress-bar" style="width: {{ new_customers_percent }}%"></div>
         </div>
     </div>
 </div>
@@ -210,80 +210,78 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Bookings Chart
-        // const ctx = document.getElementById('bookingsChart').getContext('2d');
-        // const bookingsChart = new Chart(ctx, {
-        //     type: 'line',
-        //     data: {
-        //         labels: {{ chart_labels|safe }},
-        //         datasets: [{
-        //             label: 'Bookings',
-        //             data: {{ chart_data|safe }},
-        //             backgroundColor: 'rgba(200, 169, 126, 0.2)',
-        //             borderColor: '#c8a97e',
-        //             borderWidth: 2,
-        //             tension: 0.4,
-        //             pointBackgroundColor: '#c8a97e',
-        //             pointBorderColor: '#fff',
-        //             pointRadius: 4
-        //         }]
-        //     },
-        //     options: {
-        //         responsive: true,
-        //         maintainAspectRatio: false,
-        //         scales: {
-        //             y: {
-        //                 beginAtZero: true,
-        //                 grid: {
-        //                     color: 'rgba(0, 0, 0, 0.05)'
-        //                 }
-        //             },
-        //             x: {
-        //                 grid: {
-        //                     display: false
-        //                 }
-        //             }
-        //         },
-        //         plugins: {
-        //             legend: {
-        //                 display: false
-        //             }
-        //         }
-        //     }
-        // });
+        const ctx = document.getElementById('bookingsChart').getContext('2d');
+        const bookingsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [{
+                    label: 'Bookings',
+                    data: {{ chart_data|safe }},
+                    backgroundColor: 'rgba(200, 169, 126, 0.2)',
+                    borderColor: '#c8a97e',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: '#c8a97e',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
         
         // Period Selector
-    //     const periodButtons = document.querySelectorAll('.period-btn');
-    //     periodButtons.forEach(button => {
-    //         button.addEventListener('click', function() {
-    //             periodButtons.forEach(btn => btn.classList.remove('active'));
-    //             this.classList.add('active');
+        const periodButtons = document.querySelectorAll('.period-btn');
+        periodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                periodButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
                 
-    //             const period = this.getAttribute('data-period');
-    //             // In a real app, you would fetch new data here
-    //             // For demo, we'll just update the chart with static data
-    //             if (period === 'week') {
-    //                 bookingsChart.data.labels = {{ week_labels|safe }};
-    //                 bookingsChart.data.datasets[0].data = {{ week_data|safe }};
-    //             } else {
-    //                 bookingsChart.data.labels = {{ month_labels|safe }};
-    //                 bookingsChart.data.datasets[0].data = {{ month_data|safe }};
-    //             }
-    //             bookingsChart.update();
-    //         });
-    //     });
+                const period = this.getAttribute('data-period');
+                if (period === 'week') {
+                    bookingsChart.data.labels = {{ week_labels|safe }};
+                    bookingsChart.data.datasets[0].data = {{ week_data|safe }};
+                } else {
+                    bookingsChart.data.labels = {{ month_labels|safe }};
+                    bookingsChart.data.datasets[0].data = {{ month_data|safe }};
+                }
+                bookingsChart.update();
+            });
+        });
         
-    //     // Close message alert
-    //     const closeButtons = document.querySelectorAll('.close-message');
-    //     closeButtons.forEach(button => {
-    //         button.addEventListener('click', function() {
-    //             this.parentElement.style.opacity = '0';
-    //             setTimeout(() => {
-    //                 this.parentElement.style.display = 'none';
-    //             }, 300);
-    //         });
-    //     });
-    // });
+        // Close message alert
+        const closeButtons = document.querySelectorAll('.close-message');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.style.opacity = '0';
+                setTimeout(() => {
+                    this.parentElement.style.display = 'none';
+                }, 300);
+            });
+        });
+    });
 </script>
 {% endblock %}

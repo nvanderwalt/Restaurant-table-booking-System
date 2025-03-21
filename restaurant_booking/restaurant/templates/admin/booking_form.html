@@ -207,6 +207,16 @@
                 showQuickAddBtn.style.display = 'block';
             });
         }
+
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('#id_user').select2({
+                placeholder: "Search for a customer...",
+                allowClear: true,
+                width: '100%'
+            });
+        } else {
+            console.warn("Select2 is not loaded. Customer dropdown search will not work.");
+        }
         
         // Create customer functionality
         const createCustomerBtn = document.getElementById('createCustomer');

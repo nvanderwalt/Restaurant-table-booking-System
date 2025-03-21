@@ -1,4 +1,4 @@
-{% extends 'restaurant/admin/base.html' %}
+{% extends 'admin/base.html' %}
 
 {% block title %}Menu - SpicyHunt Admin{% endblock %}
 {% block page_title %}Menu Management{% endblock %}
@@ -47,7 +47,7 @@
     <div class="menu-item-card" data-category="{{ item.category }}">
         <div class="item-image">
             {% if item.image %}
-            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            <img src="{{ item.image }}" alt="{{ item.name }}">
             {% else %}
             <div class="no-image">
                 <i class="fas fa-utensils"></i>

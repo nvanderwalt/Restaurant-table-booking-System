@@ -22,3 +22,28 @@ python manage.py createsuperuser
 # Run the server
 python manage.py runserver
 
+
+# Create superuser
+python manage.py createsuperuser
+
+username = dominic
+Email address: dominicmburu034@gmail.com
+password = 1234
+
+
+https://claude.ai/chat/0bc58563-cdc5-41f6-b008-29e4b35607ae
+
+
+migrates
+python manage.py makemigrations restaurant
+# First apply the content types migrations (which the auth app depends on)
+python manage.py migrate contenttypes
+
+# Then apply auth migrations
+python manage.py migrate auth
+
+# Now apply your restaurant app migrations that contain the CustomUser model
+python manage.py migrate restaurant
+
+# Finally apply all remaining migrations
+python manage.py migrate

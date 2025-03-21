@@ -10,15 +10,16 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 
 from django.conf import settings
-from .models import Booking, Table, Menu
+from .models import Booking, Table, Menu, CustomUser
 from .forms import TableForm, MenuForm, BookingForm
-from django.contrib.auth.models import User
 
 def admin_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if request.user.role != request.user.ADMIN:
-            return HttpResponseForbidden("You are not authorized to access this page.")
+        # Check if user is authenticated and has admin role
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            messages.error(request, "You don't have permission to access the admin area.")
+            return redirect('login')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -39,7 +40,7 @@ def admin_dashboard(request):
     
     # Get new customers this month
     first_day_of_month = today.replace(day=1)
-    new_customers_this_month = User.objects.filter(date_joined__gte=first_day_of_month).count()
+    new_customers_this_month = CustomUser.objects.filter(date_joined__gte=first_day_of_month).count()
     
     # Calculate percentages for progress bars
     max_bookings_per_day = 50  # Example max capacity
@@ -129,7 +130,7 @@ def admin_dashboard(request):
         'month_data': month_data
     }
     
-    return render(request, 'restaurant/admin/dashboard.html', context)
+    return render(request, 'admin/dashboard.html', context)
 
 # Bookings Management
 @login_required
@@ -166,7 +167,8 @@ def admin_bookings(request):
         'status_filter': status_filter
     }
     
-    return render(request, 'restaurant/admin/bookings.html', context)
+    return render(request, 'admin/booking_list.html', context)
+
 
 # Booking Detail
 @login_required
@@ -203,7 +205,7 @@ def admin_booking_detail(request, booking_id):
         'notes_history': notes_history
     }
     
-    return render(request, 'restaurant/admin/booking_detail.html', context)
+    return render(request, 'admin/booking_detail.html', context)
 
 # Add Booking
 @login_required
@@ -212,17 +214,42 @@ def admin_booking_add(request):
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
-            booking = form.save()
-            messages.success(request, "Booking created successfully")
-            return redirect('admin_booking_detail', booking_id=booking.id)
+            booking = form.save(commit=False)
+            
+            # Get the user_id from the form or request
+            user_id = request.POST.get('user')
+            if user_id:
+                try:
+                    user = CustomUser.objects.get(id=user_id)
+                    booking.user = user
+                    booking.save()
+                    messages.success(request, "Booking created successfully")
+                    return redirect('admin_booking_detail', booking_id=booking.id)
+                except CustomUser.DoesNotExist:
+                    form.add_error(None, "Selected user does not exist")
+            else:
+                form.add_error(None, "Please select a user for this booking")
     else:
         form = BookingForm()
+        # Pre-populate user field if provided in URL
+        initial_user_id = request.GET.get('user')
+        if initial_user_id:
+            try:
+                initial_user = CustomUser.objects.get(id=initial_user_id)
+                form.initial['user'] = initial_user.id
+            except CustomUser.DoesNotExist:
+                pass
+    
+    # Get all users for the dropdown
+    users = CustomUser.objects.all().order_by('username')
     
     context = {
-        'form': form
+        'form': form,
+        'users': users
     }
     
-    return render(request, 'restaurant/admin/booking_form.html', context)
+    return render(request, 'admin/booking_form.html', context)
+
 
 # Edit Booking
 @login_required
@@ -243,7 +270,7 @@ def admin_booking_edit(request, booking_id):
         'form': form
     }
     
-    return render(request, 'restaurant/admin/booking_form.html', context)
+    return render(request, 'admin/booking_form.html', context)
 
 # Confirm Booking
 @login_required
@@ -286,7 +313,7 @@ def admin_booking_delete(request, booking_id):
         'booking': booking
     }
     
-    return render(request, 'restaurant/admin/booking_delete.html', context)
+    return render(request, 'admin/booking_delete.html', context)
 
 # Table Management
 @login_required
@@ -298,7 +325,7 @@ def admin_tables(request):
         'tables': tables
     }
     
-    return render(request, 'restaurant/admin/tables.html', context)
+    return render(request, 'admin/table_management.html', context)
 
 # Menu Management
 @login_required
@@ -310,7 +337,7 @@ def admin_menu(request):
         'menu_items': menu_items
     }
     
-    return render(request, 'restaurant/admin/menu.html', context)
+    return render(request, 'admin/menu.html', context)
 
 # Add Menu Item
 @login_required
@@ -329,7 +356,7 @@ def admin_menu_add(request):
         'form': form
     }
     
-    return render(request, 'restaurant/admin/menu_form.html', context)
+    return render(request, 'admin/menu_form.html', context)
 
 # Edit Menu Item
 @login_required
@@ -354,7 +381,7 @@ def admin_menu_edit(request, menu_id):
         'form': form
     }
     
-    return render(request, 'restaurant/admin/menu_form.html', context)
+    return render(request, 'admin/menu_form.html', context)
 
 # Toggle Menu Item Availability
 @login_required
@@ -404,7 +431,7 @@ def admin_table_add(request):
         'title': 'Add New Table'
     }
     
-    return render(request, 'restaurant/admin/table_form.html', context)
+    return render(request, 'admin/table_form.html', context)
 
 @login_required
 @admin_required
@@ -426,7 +453,7 @@ def admin_table_edit(request, table_id):
         'title': f'Edit Table {table.number}'
     }
     
-    return render(request, 'restaurant/admin/table_form.html', context)
+    return render(request, 'admin/table_form.html', context)
 
 @login_required
 @admin_required
@@ -451,7 +478,7 @@ def admin_table_delete(request, table_id):
         'bookings_count': Booking.objects.filter(table=table).count()
     }
     
-    return render(request, 'restaurant/admin/table_delete.html', context)
+    return render(request, 'admin/table_delete.html', context)
 
 @login_required
 @admin_required
@@ -492,7 +519,7 @@ def admin_table_detail(request, table_id):
         'today': today
     }
     
-    return render(request, 'restaurant/admin/table_detail.html', context)
+    return render(request, 'admin/table_detail.html', context)
 
 # Menu Administration Views
 @login_required
@@ -510,7 +537,7 @@ def admin_menu_delete(request, menu_id):
         'menu_item': menu_item
     }
     
-    return render(request, 'restaurant/admin/menu_delete.html', context)
+    return render(request, 'admin/menu_delete.html', context)
 
 @login_required
 @admin_required
@@ -562,14 +589,14 @@ def admin_customers(request):
     
     # Get all customers (users)
     if search:
-        customers = User.objects.filter(
+        customers = CustomUser.objects.filter(
             Q(username__icontains=search) | 
             Q(email__icontains=search) |
             Q(first_name__icontains=search) |
             Q(last_name__icontains=search)
         ).order_by('username')
     else:
-        customers = User.objects.all().order_by('username')
+        customers = CustomUser.objects.all().order_by('username')
     
     # Pagination
     paginator = Paginator(customers, 20)  # 20 customers per page
@@ -586,12 +613,12 @@ def admin_customers(request):
         'search': search
     }
     
-    return render(request, 'restaurant/admin/customers.html', context)
+    return render(request, 'admin/customers.html', context)
 
 @login_required
 @admin_required
 def admin_customer_detail(request, user_id):
-    customer = get_object_or_404(User, id=user_id)
+    customer = get_object_or_404(CustomUser, id=user_id)
     
     # Get customer's bookings
     bookings = Booking.objects.filter(user=customer).order_by('-date')
@@ -615,7 +642,7 @@ def admin_customer_detail(request, user_id):
     
     # Calculate average party size
     if bookings.exists():
-        avg_party_size = bookings.aggregate(avg=models.Avg('number_of_guests'))['avg']
+        avg_party_size = bookings.aggregate(avg=Avg('number_of_guests'))['avg']
         avg_party_size = round(avg_party_size, 1)
     else:
         avg_party_size = 0
@@ -633,7 +660,7 @@ def admin_customer_detail(request, user_id):
         'days_as_member': (timezone.now().date() - customer.date_joined.date()).days
     }
     
-    return render(request, 'restaurant/admin/customer_detail.html', context)
+    return render(request, 'admin/customer_detail.html', context)
 
 # Reports View
 @login_required
@@ -738,55 +765,6 @@ def admin_reports(request):
             'popular_hours': popular_hours_display
         }
     
-    elif report_type == 'tables':
-        # Get table utilization
-        tables = Table.objects.all().order_by('number')
-        
-        # Count bookings per table in the date range
-        table_bookings = {}
-        for table in tables:
-            count = Booking.objects.filter(
-                table=table,
-                date__gte=start_date,
-                date__lte=end_date
-            ).count()
-            table_bookings[f"Table {table.number}"] = count
-        
-        # Format for chart
-        labels = list(table_bookings.keys())
-        data = list(table_bookings.values())
-        
-        # Calculate utilization rate
-        days_in_range = (end_date - start_date).days + 1
-        bookings_per_day = 8  # Assuming 8 booking slots per day
-        potential_bookings = days_in_range * bookings_per_day
-        
-        table_utilization = {}
-        for table in tables:
-            count = Booking.objects.filter(
-                table=table,
-                date__gte=start_date,
-                date__lte=end_date
-            ).count()
-            
-            if potential_bookings > 0:
-                rate = (count / potential_bookings) * 100
-            else:
-                rate = 0
-            
-            table_utilization[f"Table {table.number}"] = round(rate, 1)
-        
-        context = {
-            'report_type': report_type,
-            'period': period,
-            'start_date': start_date,
-            'end_date': end_date,
-            'today': today,
-            'chart_labels': labels,
-            'chart_data': data,
-            'table_utilization': table_utilization
-        }
-    
     elif report_type == 'customers':
         # Count new customers by join date
         new_customers_by_date = {}
@@ -799,7 +777,7 @@ def admin_reports(request):
             current_date += timedelta(days=1)
         
         # Count new signups per date
-        customers = User.objects.filter(date_joined__date__gte=start_date, date_joined__date__lte=end_date)
+        customers = CustomUser.objects.filter(date_joined__date__gte=start_date, date_joined__date__lte=end_date)
         for customer in customers:
             join_date = customer.date_joined.date()
             if join_date in new_customers_by_date:
@@ -810,16 +788,16 @@ def admin_reports(request):
         data = [new_customers_by_date[date] for date in date_range]
         
         # Get total customers
-        total_customers = User.objects.count()
+        total_customers = CustomUser.objects.count()
         new_customers = customers.count()
         
         # Get active customers (made a booking in last 30 days)
-        active_customers = User.objects.filter(
+        active_customers = CustomUser.objects.filter(
             booking__date__gte=today - timedelta(days=30)
         ).distinct().count()
         
         # Get top customers by number of bookings
-        top_customers = User.objects.annotate(
+        top_customers = CustomUser.objects.annotate(
             booking_count=Count('booking')
         ).order_by('-booking_count')[:10]
         
@@ -837,7 +815,7 @@ def admin_reports(request):
             'top_customers': top_customers
         }
     
-    return render(request, 'restaurant/admin/reports.html', context)
+    return render(request, 'admin/reports.html', context)
 
 # Settings View
 @login_required
@@ -865,7 +843,7 @@ def admin_settings(request):
     
     # Get database stats
     db_stats = {
-        'total_users': User.objects.count(),
+        'total_users': CustomUser.objects.count(),
         'total_bookings': Booking.objects.count(),
         'total_tables': Table.objects.count(),
         'total_menu_items': Menu.objects.count()
@@ -876,4 +854,4 @@ def admin_settings(request):
         'db_stats': db_stats
     }
     
-    return render(request, 'restaurant/admin/settings.html', context)
+    return render(request, 'admin/settings.html', context)

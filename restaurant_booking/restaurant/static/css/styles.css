@@ -294,7 +294,7 @@ nav a:hover:after {
 .booking-cta {
     padding: 100px 20px;
     text-align: center;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../images/restaurant-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://i.pinimg.com/736x/36/04/8b/36048b5aef46d62f25b71ea4cf61a8fb.jpg');
     background-size: cover;
     background-position: center;
     color: white;
