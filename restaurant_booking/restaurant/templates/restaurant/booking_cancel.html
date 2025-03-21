@@ -1,0 +1,30 @@
+{% extends 'restaurant/base_generic.html' %}
+
+{% block title %}Cancel Booking - SpicyFood{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Cancel Booking</h1>
+</section>
+
+<section class="booking-detail-section">
+    <div class="booking-detail-container">
+        <h2>Are you sure you want to cancel this booking?</h2>
+        
+        <div class="booking-detail-info">
+            <p><strong>Date:</strong> {{ booking.date }}</p>
+            <p><strong>Time:</strong> {{ booking.time }}</p>
+            <p><strong>Table:</strong> {{ booking.table }}</p>
+            <p><strong>Number of Guests:</strong> {{ booking.number_of_guests }}</p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="booking-detail-buttons">
+                <button type="submit" class="btn cancel-btn">Yes, Cancel Booking</button>
+                <a href="{% url 'booking_detail' booking.id %}" class="btn">No, Keep Booking</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

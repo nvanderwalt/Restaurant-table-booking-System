@@ -1,0 +1,84 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SpicyFood - Restaurant Booking System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="{% url 'index' %}">
+                <span class="icon"><i class="fas fa-utensils"></i></span>
+                <span class="name">SpicyFood</span>
+            </a>
+        </div>
+        <!-- Added mobile menu toggle button -->
+        <div class="mobile-menu-toggle" id="mobileMenuToggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <nav id="mainNav">
+            <ul>
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'menu' %}">Menu</a></li>
+                <li><a href="{% url 'booking' %}">Book a Table</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'booking_list' %}">My Bookings</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="book-btn">
+            <a href="{% url 'booking' %}" class="btn">Book A Table</a>
+        </div>
+    </header>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <main>
+        {% block content %}
+        {% endblock %}
+
+        <div id="backToTop" class="back-to-top">
+            <i class="fas fa-chevron-up"></i>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <div class="location">
+                    <p><i class="fas fa-map-marker-alt"></i> 4517 Washington Ave, Kentucky 39495</p>
+                </div>
+                <div class="phone">
+                    <p><i class="fas fa-phone"></i> +01 780 859 632</p>
+                </div>
+                <div class="social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 SpicyFood. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

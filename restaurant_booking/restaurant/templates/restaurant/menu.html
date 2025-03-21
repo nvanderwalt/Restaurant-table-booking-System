@@ -1,0 +1,115 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% block title %}Menu - SpicyFood{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="overlay"></div>
+    <div class="header-content">
+        <h1>Our Menu</h1>
+        <p>Culinary excellence with every bite</p>
+    </div>
+</section>
+
+<section class="menu-showcase">
+    <div class="container">
+        <div class="menu-intro">
+            <span class="subheading">CULINARY DELIGHTS</span>
+            <h2>DISCOVER OUR SIGNATURE DISHES</h2>
+            <p>Each dish is crafted with passion and precision, using only the freshest seasonal ingredients to create unforgettable flavors that will tantalize your taste buds.</p>
+        </div>
+        
+        <div class="category-tabs">
+            <button class="tab-btn active" data-category="all">All Dishes</button>
+            <button class="tab-btn" data-category="APPETIZER">Appetizers</button>
+            <button class="tab-btn" data-category="SOUP">Soups</button>
+            <button class="tab-btn" data-category="SALAD">Salads</button>
+            <button class="tab-btn" data-category="MAIN">Main Dishes</button>
+            <button class="tab-btn" data-category="DESSERT">Desserts</button>
+        </div>
+        
+        <div class="menu-items">
+            {% for item in menu_items %}
+            <div class="menu-item" data-category="{{ item.category }}">
+                <div class="item-image">
+                    {% if item.image %}
+                    <img src="{{ item.image }}" alt="{{ item.name }}">
+                    {% else %}
+                    <img src="https://i.pinimg.com/736x/03/e9/84/03e984afeb479490cab605c39bfdac03.jpg" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="category-tag">{{ item.get_category_display }}</div>
+                </div>
+                <div class="item-details">
+                    <div class="item-header">
+                        <h3>{{ item.name }}</h3>
+                        <span class="price">${{ item.price }}</span>
+                    </div>
+                    <p class="description">{{ item.description }}</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'booking' %}" class="order-btn">Book a Table</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-items">
+                <i class="fas fa-utensils"></i>
+                <p>Our chefs are preparing something special.</p>
+                <p>New menu items will be available soon!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="menu-cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Enjoy Our Special Dishes</h2>
+            <p>Experience the extraordinary culinary journey at SpicyHunt. Reservations are recommended to ensure your table is waiting.</p>
+            <a href="{% url 'booking' %}" class="btn">Book Your Table</a>
+        </div>
+    </div>
+</section>
+
+<script>
+    // JavaScript for menu filtering
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.tab-btn');
+        const menuItems = document.querySelectorAll('.menu-item');
+        
+        // Animation for menu items
+        menuItems.forEach(item => {
+            item.classList.add('reveal-element');
+        });
+        setTimeout(() => {
+            menuItems.forEach(item => {
+                item.classList.add('is-visible');
+            });
+        }, 300);
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                menuItems.forEach(item => {
+                    item.classList.remove('is-visible');
+                    
+                    setTimeout(() => {
+                        if (category === 'all' || item.getAttribute('data-category') === category) {
+                            item.style.display = 'flex';
+                            setTimeout(() => {
+                                item.classList.add('is-visible');
+                            }, 10);
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }, 300);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

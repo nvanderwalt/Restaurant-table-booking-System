@@ -1,0 +1,289 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard - SpicyHunt Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-details">
+            <h2>{{ today_bookings }}</h2>
+            <p>Today's Reservations</p>
+        </div>
+        <div class="stat-progress">
+            <!-- <div class="progress-bar" style="width: {{ today_bookings_percent }}%"></div> -->
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-details">
+            <h2>{{ total_guests_today }}</h2>
+            <p>Guests Today</p>
+        </div>
+        <div class="stat-progress">
+            <!-- <div class="progress-bar" style="width: {{ guests_percent }}%"></div> -->
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-utensils"></i>
+        </div>
+        <div class="stat-details">
+            <h2>{{ menu_items_count }}</h2>
+            <p>Menu Items</p>
+        </div>
+        <div class="stat-progress">
+            <div class="progress-bar" style="width: 100%"></div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <div class="stat-details">
+            <h2>{{ new_customers_this_month }}</h2>
+            <p>New Customers This Month</p>
+        </div>
+        <div class="stat-progress">
+            <!-- <div class="progress-bar" style="width: {{ new_customers_percent }}%"></div> -->
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <div class="dashboard-left">
+        <div class="card upcoming-bookings">
+            <div class="card-header">
+                <h3>Today's Reservations</h3>
+                <a href="{% url 'admin_bookings' %}" class="view-all">View All</a>
+            </div>
+            <div class="card-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Guests</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in todays_bookings %}
+                        <tr>
+                            <td>{{ booking.time|time:"g:i A" }}</td>
+                            <td>{{ booking.user.get_full_name|default:booking.user.username }}</td>
+                            <td>{{ booking.table }}</td>
+                            <td>{{ booking.number_of_guests }}</td>
+                            <td>
+                                <span class="status-badge status-{{ booking.status|lower }}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'admin_booking_detail' booking.id %}" class="btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if booking.status != 'CANCELLED' %}
+                                    <a href="{% url 'admin_booking_edit' booking.id %}" class="btn-icon" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="empty-table">No bookings for today</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card booking-analytics">
+            <div class="card-header">
+                <h3>Booking Analytics</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="week">Week</button>
+                    <button class="period-btn" data-period="month">Month</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="bookingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-right">
+        <div class="card quick-actions">
+            <div class="card-header">
+                <h3>Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'admin_booking_add' %}" class="action-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>New Booking</span>
+                </a>
+                <a href="{% url 'admin_table_add' %}" class="action-item">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Table</span>
+                </a>
+                <a href="{% url 'admin_menu_add' %}" class="action-item">
+                    <i class="fas fa-utensils"></i>
+                    <span>Add Menu Item</span>
+                </a>
+                <a href="{% url 'admin_reports' %}" class="action-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Reports</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="card popular-tables">
+            <div class="card-header">
+                <h3>Popular Tables</h3>
+            </div>
+            <div class="card-body">
+                <ul class="ranking-list">
+                    {% for table in popular_tables %}
+                    <li>
+                        <div class="rank-info">
+                            <div class="rank-number">{{ forloop.counter }}</div>
+                            <div class="rank-details">
+                                <h4>Table {{ table.number }}</h4>
+                                <p>Capacity: {{ table.capacity }} guests</p>
+                            </div>
+                        </div>
+                        <div class="rank-value">
+                            <span>{{ table.booking_count }}</span>
+                            <small>bookings</small>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="empty-list">No data available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card recent-activity">
+            <div class="card-header">
+                <h3>Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <ul class="activity-list">
+                    {% for activity in recent_activities %}
+                    <li>
+                        <div class="activity-icon activity-{{ activity.type }}">
+                            <i class="fas fa-{{ activity.icon }}"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p>{{ activity.description }}</p>
+                            <span class="activity-time">{{ activity.time|timesince }} ago</span>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="empty-list">No recent activity</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // document.addEventListener('DOMContentLoaded', function() {
+        // Bookings Chart
+        // const ctx = document.getElementById('bookingsChart').getContext('2d');
+        // const bookingsChart = new Chart(ctx, {
+        //     type: 'line',
+        //     data: {
+        //         labels: {{ chart_labels|safe }},
+        //         datasets: [{
+        //             label: 'Bookings',
+        //             data: {{ chart_data|safe }},
+        //             backgroundColor: 'rgba(200, 169, 126, 0.2)',
+        //             borderColor: '#c8a97e',
+        //             borderWidth: 2,
+        //             tension: 0.4,
+        //             pointBackgroundColor: '#c8a97e',
+        //             pointBorderColor: '#fff',
+        //             pointRadius: 4
+        //         }]
+        //     },
+        //     options: {
+        //         responsive: true,
+        //         maintainAspectRatio: false,
+        //         scales: {
+        //             y: {
+        //                 beginAtZero: true,
+        //                 grid: {
+        //                     color: 'rgba(0, 0, 0, 0.05)'
+        //                 }
+        //             },
+        //             x: {
+        //                 grid: {
+        //                     display: false
+        //                 }
+        //             }
+        //         },
+        //         plugins: {
+        //             legend: {
+        //                 display: false
+        //             }
+        //         }
+        //     }
+        // });
+        
+        // Period Selector
+    //     const periodButtons = document.querySelectorAll('.period-btn');
+    //     periodButtons.forEach(button => {
+    //         button.addEventListener('click', function() {
+    //             periodButtons.forEach(btn => btn.classList.remove('active'));
+    //             this.classList.add('active');
+                
+    //             const period = this.getAttribute('data-period');
+    //             // In a real app, you would fetch new data here
+    //             // For demo, we'll just update the chart with static data
+    //             if (period === 'week') {
+    //                 bookingsChart.data.labels = {{ week_labels|safe }};
+    //                 bookingsChart.data.datasets[0].data = {{ week_data|safe }};
+    //             } else {
+    //                 bookingsChart.data.labels = {{ month_labels|safe }};
+    //                 bookingsChart.data.datasets[0].data = {{ month_data|safe }};
+    //             }
+    //             bookingsChart.update();
+    //         });
+    //     });
+        
+    //     // Close message alert
+    //     const closeButtons = document.querySelectorAll('.close-message');
+    //     closeButtons.forEach(button => {
+    //         button.addEventListener('click', function() {
+    //             this.parentElement.style.opacity = '0';
+    //             setTimeout(() => {
+    //                 this.parentElement.style.display = 'none';
+    //             }, 300);
+    //         });
+    //     });
+    // });
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'restaurant/base_generic.html' %}
+
+{% block title %}Book a Table - SpicyFood{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Book A Table</h1>
+</section>
+
+<section class="booking-form">
+    <div class="container">
+        <div class="form-wrapper">
+            <h2>Make Your Reservation</h2>
+            <p>Book your table online and enjoy a dining experience with us.</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.date.id_for_label }}">Date</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <div class="error">{{ form.date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.time.id_for_label }}">Time</label>
+                        {{ form.time }}
+                        {% if form.time.errors %}
+                        <div class="error">{{ form.time.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.table.id_for_label }}">Table</label>
+                        {{ form.table }}
+                        {% if form.table.errors %}
+                        <div class="error">{{ form.table.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.number_of_guests.id_for_label }}">Number of Guests</label>
+                        {{ form.number_of_guests }}
+                        {% if form.number_of_guests.errors %}
+                        <div class="error">{{ form.number_of_guests.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.special_requests.id_for_label }}">Special Requests</label>
+                    {{ form.special_requests }}
+                    {% if form.special_requests.errors %}
+                    <div class="error">{{ form.special_requests.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn">Reserve Now</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="booking-info">
+            <div class="info-section">
+                <h3>Opening Hours</h3>
+                <ul>
+                    <li><span>Monday - Thursday:</span> 10:00 AM - 09:00 PM</li>
+                    <li><span>Friday - Saturday:</span> 09:00 AM - 10:00 PM</li>
+                    <li><span>Sunday:</span> Closed</li>
+                </ul>
+            </div>
+            
+            <div class="info-section">
+                <h3>Contact Information</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> 4517 Washington Ave, Kentucky 39495</li>
+                    <li><i class="fas fa-phone"></i> +01 780 859 632</li>
+                    <li><i class="fas fa-envelope"></i> info@spicyhunt.com</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

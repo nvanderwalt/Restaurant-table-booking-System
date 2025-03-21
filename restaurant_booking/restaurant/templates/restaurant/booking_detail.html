@@ -1,0 +1,45 @@
+{% extends 'restaurant/base_generic.html' %}
+
+{% block title %}Booking Details - SpicyFood{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Booking Details</h1>
+</section>
+
+<section class="booking-detail-section">
+    <div class="booking-detail-container">
+        <div class="booking-detail-header">
+            <h2>Reservation #{{ booking.id }}</h2>
+            <div class="booking-status status-{{ booking.status|lower }}">
+                {{ booking.get_status_display }}
+            </div>
+        </div>
+        
+        <div class="booking-detail-info">
+            <p><strong>Date:</strong> {{ booking.date }}</p>
+            <p><strong>Time:</strong> {{ booking.time }}</p>
+            <p><strong>Table:</strong> {{ booking.table }}</p>
+            <p><strong>Number of Guests:</strong> {{ booking.number_of_guests }}</p>
+            <p><strong>Booking Status:</strong> {{ booking.get_status_display }}</p>
+            <p><strong>Booked On:</strong> {{ booking.created_at }}</p>
+        </div>
+        
+        {% if booking.special_requests %}
+        <div class="booking-detail-special">
+            <h3>Special Requests</h3>
+            <p>{{ booking.special_requests }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="booking-detail-buttons">
+            <a href="{% url 'booking_list' %}" class="btn">Back to All Bookings</a>
+            
+            {% if booking.status != 'CANCELLED' and booking.date >= today %}
+            <a href="{% url 'booking_edit' booking.id %}" class="btn edit-btn">Edit Booking</a>
+            <a href="{% url 'booking_cancel' booking.id %}" class="btn cancel-btn">Cancel Booking</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

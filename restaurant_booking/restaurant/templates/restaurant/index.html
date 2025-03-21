@@ -1,0 +1,245 @@
+{% extends 'restaurant/base_generic.html' %}
+
+{% load static %}
+
+{% block title %}SpicyFood - Fine Dining Restaurant{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>DINING REDEFINED WITH EVERY BITE</h1>
+        <p>Immerse yourself in a dining experience like no other, where every dish is a masterpiece of flavor, crafted with care and precision. From the freshest ingredients.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'booking' %}" class="btn book-btn">Book A Table</a>
+            <a href="{% url 'menu' %}" class="btn menu-btn">Explore Menu</a>
+        </div>
+    </div>
+</section>
+
+<section class="about">
+    <div class="about-header">
+        <span class="subheading">ABOUT US</span>
+        <h2>OUR COMMITMENT TO AUTHENTICITY & EXCELLENCE</h2>
+    </div>
+    <div class="about-content">
+        <p>Every dish we create is a celebration of connection, crafted with passion and inspired by diverse flavors. Join us in an inviting space where every bite sparks joy and every moment becomes a cherished memory.</p>
+        <ul class="features">
+            <li><i class="fas fa-check-circle"></i> Seasonal & Locally Sourced Ingredients</li>
+            <li><i class="fas fa-check-circle"></i> Vegetarian & Dietary-Friendly Options</li>
+            <li><i class="fas fa-check-circle"></i> Exquisite Pairings & Unique Flavors</li>
+        </ul>
+        <div class="about-buttons">
+            <a href="{% url 'menu' %}" class="btn">Explore Menu</a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-star"></i></div>
+        <h3>Premium Dining</h3>
+        <p>It's very personal, and can only be a positive experience.</p>
+    </div>
+    <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+        <h3>Abundant Flavors</h3>
+        <p>At secret recipe, we take immense pride in crafting.</p>
+    </div>
+    <div class="feature-item">
+        <div class="feature-icon"><i class="fas fa-leaf"></i></div>
+        <h3>Indigenous Meals</h3>
+        <p>With local ingredients, unique spins on traditional flavors.</p>
+    </div>
+</section>
+
+<!-- NEW VIDEO SECTION -->
+<section class="video-showcase">
+    <div class="video-container">
+        <div class="video-overlay">
+            <div class="video-content">
+                <span class="subheading">EXPERIENCE THE ATMOSPHERE</span>
+                <h2>WATCH OUR CULINARY JOURNEY</h2>
+                <button class="play-btn" id="playVideoBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+        </div>
+        <div class="video-modal" id="videoModal">
+            <div class="video-modal-content">
+                <span class="close-video">&times;</span>
+                <div class="video-wrapper">
+                    <video width="560" height="315" controls>
+                        <source src="{% static 'videos/food.mp4' %}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Menu preview section with your image links -->
+<section class="menu-preview">
+    <div class="section-header">
+        <span class="subheading">OUR SIGNATURE MAINS</span>
+    </div>
+    <div class="menu-categories">
+        <div class="category">
+            <img src="https://i.pinimg.com/736x/5a/64/56/5a645633e94a1d741cc3b62965888b37.jpg" alt="Soup">
+            <h3>Soups</h3>
+            <p>Warm, comforting, and full of flavor, our soups are the perfect start to any meal.</p>
+        </div>
+        <div class="category">
+            <img src="https://i.pinimg.com/736x/15/de/2c/15de2cac5615a54813f8e0a8530c6876.jpg" alt="Salad">
+            <h3>Salads</h3>
+            <p>Refreshing, vibrant, and full of fresh flavors, our salads are crafted to delight your senses.</p>
+        </div>
+        <div class="category">
+            <img src="https://i.pinimg.com/736x/03/e9/84/03e984afeb479490cab605c39bfdac03.jpg" alt="Main Dish">
+            <h3>Main Dishes</h3>
+            <p>Offering bold flavors and expertly crafted recipes that cater to every taste.</p>
+        </div>
+        <div class="category">
+            <img src="https://i.pinimg.com/736x/74/62/97/746297f074bed5db7f26cee0c1decc28.jpg" alt="Appetizer">
+            <h3>Appetizers</h3>
+            <p>Our appetizers are the perfect way to begin your dining experience with exciting flavors.</p>
+        </div>
+    </div>
+    <div class="menu-link">
+        <a href="{% url 'menu' %}">View All Dishes</a>
+    </div>
+</section>
+
+<!-- Team Section - NEW -->
+<section class="our-team">
+    <div class="section-header">
+        <span class="subheading">MEET OUR TEAM</span>
+        <h2>THE CULINARY ARTISTS BEHIND THE MAGIC</h2>
+    </div>
+    <div class="team-grid">
+        <div class="team-member">
+            <div class="member-image">
+                <img src="https://i.pinimg.com/736x/ea/5f/c7/ea5fc7548c8b5b286204a67cd6f61945.jpg" alt="Chef Name">
+            </div>
+            <div class="member-info">
+                <h3>Michael Roberts</h3>
+                <p class="member-title">Executive Chef</p>
+                <p class="member-bio">With over 15 years of experience in fine dining, Chef Michael brings creativity and precision to every dish.</p>
+                <div class="member-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="team-member">
+            <div class="member-image">
+                <img src="https://i.pinimg.com/736x/4a/f2/05/4af205d49fed2c4c9d8da12e97ba439f.jpg" alt="Chef Name">
+            </div>
+            <div class="member-info">
+                <h3>Sophia Chen</h3>
+                <p class="member-title">Pastry Chef</p>
+                <p class="member-bio">A master of sweet creations, Sophia's desserts are as beautiful as they are delicious.</p>
+                <div class="member-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="team-member">
+            <div class="member-image">
+                <img src="https://i.pinimg.com/736x/fa/77/68/fa776887cf09fcfe47521683d4fdb674.jpg" alt="Chef Name">
+            </div>
+            <div class="member-info">
+                <h3>James Wilson</h3>
+                <p class="member-title">Sous Chef</p>
+                <p class="member-bio">James brings technical excellence and passion to our kitchen, specializing in innovative flavor combinations.</p>
+                <div class="member-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonial Slider - NEW -->
+<section class="testimonials">
+    <div class="section-header">
+        <span class="subheading">GUEST EXPERIENCES</span>
+        <h2>WHAT OUR CUSTOMERS SAY</h2>
+    </div>
+    <div class="testimonial-slider">
+        <div class="testimonial-container" id="testimonialContainer">
+            <div class="testimonial-slide">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>"From the moment we walked in, the ambiance was welcoming, and the service was <br> top-notch. The dish was absolutely delicious, full of <br> fresh flavors and perfectly cooked."</p>
+                    <div class="testimonial-author">
+                        <h4>Maria Thompson</h4>
+                        <p>Food Blogger</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>"The chef's tasting menu was an unforgettable <br> culinary journey. Each course was more impressive than <br> the last, and the wine pairings were perfect."</p>
+                    <div class="testimonial-author">
+                        <h4>Robert Chen</h4>
+                        <p>Wine Enthusiast</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide">
+                <div class="testimonial-content">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>"As someone with dietary restrictions, I was impressed by how <br> accommodating the staff was. They created a <br> special menu just for me without compromising on flavor or presentation."</p>
+                    <div class="testimonial-author">
+                        <h4>Sarah Johnson</h4>
+                        <p>Regular Customer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-controls">
+            <button class="testimonial-btn prev" id="prevTestimonial"><i class="fas fa-chevron-left"></i></button>
+            <div class="testimonial-dots" id="testimonialDots">
+                <span class="dot active" data-slide="0"></span>
+                <span class="dot" data-slide="1"></span>
+                <span class="dot" data-slide="2"></span>
+            </div>
+            <button class="testimonial-btn next" id="nextTestimonial"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+
+<!-- Booking CTA remains the same -->
+<section class="booking-cta">
+    <div class="section-header">
+        <span class="subheading">RESERVE A TABLE</span>
+        <h2>RESERVE NOW YOUR TABLE AND ENJOY DINING EXPERIENCE</h2>
+    </div>
+    <div class="booking-info">
+        <div class="hours">
+            <h3>Open Hours</h3>
+            <table>
+                <tr>
+                    <td>Mon - Thu</td>
+                    <td>10:00 AM - 09:00 PM</td>
+                </tr>
+                <tr>
+                    <td>Fri - Sat</td>
+                    <td>09:00 AM - 10:00 PM</td>
+                </tr>
+                <tr>
+                    <td>Sun</td>
+                    <td>Closed</td>
+                </tr>
+            </table>
+        </div>
+        <div class="booking-button">
+            <a href="{% url 'booking' %}" class="btn">Book A Table Now</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

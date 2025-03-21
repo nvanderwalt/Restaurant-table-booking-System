@@ -1,0 +1,286 @@
+{% extends 'restaurant/admin/base.html' %}
+
+{% block title %}Bookings - SpicyHunt Admin{% endblock %}
+{% block page_title %}Bookings Management{% endblock %}
+{% block breadcrumb %}Bookings{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <div class="filters">
+        <div class="filter-group">
+            <label for="dateFilter">Date:</label>
+            <input type="date" id="dateFilter" name="date" value="{{ date_filter|default:'' }}">
+        </div>
+        
+        <div class="filter-group">
+            <label for="statusFilter">Status:</label>
+            <select id="statusFilter" name="status">
+                <option value="">All Statuses</option>
+                <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        
+        <button type="button" id="applyFilters" class="btn btn-primary">
+            <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        
+        <button type="button" id="clearFilters" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Clear
+        </button>
+    </div>
+    
+    <a href="{% url 'admin_booking_add' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Add New Booking
+    </a>
+</div>
+
+<div class="card bookings-table-card">
+    <div class="card-header">
+        <h3>All Bookings</h3>
+        <div class="table-actions">
+            <button type="button" class="btn btn-outline">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+            <div class="search-box">
+                <input type="text" id="tableSearch" placeholder="Search bookings...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="selectAll">
+                            <label for="selectAll"></label>
+                        </div>
+                    </th>
+                    <th>ID <i class="fas fa-sort"></i></th>
+                    <th>Customer <i class="fas fa-sort"></i></th>
+                    <th>Date <i class="fas fa-sort"></i></th>
+                    <th>Time <i class="fas fa-sort"></i></th>
+                    <th>Table <i class="fas fa-sort"></i></th>
+                    <th>Guests <i class="fas fa-sort"></i></th>
+                    <th>Status <i class="fas fa-sort"></i></th>
+                    <th>Created <i class="fas fa-sort"></i></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="select{{ booking.id }}" name="selected[]" value="{{ booking.id }}">
+                            <label for="select{{ booking.id }}"></label>
+                        </div>
+                    </td>
+                    <td><a href="{% url 'admin_booking_detail' booking.id %}">#{{ booking.id }}</a></td>
+                    <td>{{ booking.user.get_full_name|default:booking.user.username }}</td>
+                    <td>{{ booking.date|date:"M d, Y" }}</td>
+                    <td>{{ booking.time|time:"g:i A" }}</td>
+                    <td>Table {{ booking.table.number }}</td>
+                    <td>{{ booking.number_of_guests }}</td>
+                    <td>
+                        <span class="status-badge status-{{ booking.status|lower }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ booking.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'admin_booking_detail' booking.id %}" class="btn-icon" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if booking.status != 'CANCELLED' %}
+                            <a href="{% url 'admin_booking_edit' booking.id %}" class="btn-icon" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                            <button type="button" class="btn-icon dropdown-toggle" title="More">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                {% if booking.status == 'PENDING' %}
+                                <a href="{% url 'admin_booking_confirm' booking.id %}">
+                                    <i class="fas fa-check"></i> Confirm
+                                </a>
+                                {% endif %}
+                                {% if booking.status != 'CANCELLED' %}
+                                <a href="{% url 'admin_booking_cancel' booking.id %}">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'admin_booking_delete' booking.id %}" class="text-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty-table">No bookings found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <div class="bulk-actions">
+            <select id="bulkAction">
+                <option value="">Bulk Actions</option>
+                <option value="confirm">Confirm Selected</option>
+                <option value="cancel">Cancel Selected</option>
+                <option value="delete">Delete Selected</option>
+            </select>
+            <button type="button" id="applyBulkAction" class="btn btn-primary">Apply</button>
+        </div>
+        
+        <div class="pagination">
+            {% if bookings.has_previous %}
+            <a href="?page=1" class="page-link">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ bookings.previous_page_number }}" class="page-link">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            {% endif %}
+            
+            <span class="page-info">
+                Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}
+            </span>
+            
+            {% if bookings.has_next %}
+            <a href="?page={{ bookings.next_page_number }}" class="page-link">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ bookings.paginator.num_pages }}" class="page-link">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Table search functionality
+        const searchInput = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.data-table tbody tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Select all checkboxes
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('input[name="selected[]"]');
+        
+        selectAllCheckbox.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+        
+        // Filter application
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        const dateFilter = document.getElementById('dateFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        applyFiltersBtn.addEventListener('click', function() {
+            let url = new URL(window.location.href);
+            
+            if (dateFilter.value) {
+                url.searchParams.set('date', dateFilter.value);
+            } else {
+                url.searchParams.delete('date');
+            }
+            
+            if (statusFilter.value) {
+                url.searchParams.set('status', statusFilter.value);
+            } else {
+                url.searchParams.delete('status');
+            }
+            
+            window.location.href = url.toString();
+        });
+        
+        clearFiltersBtn.addEventListener('click', function() {
+            dateFilter.value = '';
+            statusFilter.value = '';
+            
+            let url = new URL(window.location.href);
+            url.search = '';
+            window.location.href = url.toString();
+        });
+        
+        // Bulk actions
+        const bulkActionSelect = document.getElementById('bulkAction');
+        const applyBulkActionBtn = document.getElementById('applyBulkAction');
+        
+        applyBulkActionBtn.addEventListener('click', function() {
+            const selectedAction = bulkActionSelect.value;
+            if (!selectedAction) return;
+            
+            const selectedIds = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one booking');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to ${selectedAction} the selected bookings?`)) {
+                // In a real application, you would send an AJAX request here
+                console.log(`Action: ${selectedAction}, IDs: ${selectedIds.join(',')}`);
+                
+                // For demo purposes, reload the page
+                window.location.reload();
+            }
+        });
+        
+        // Dropdown toggle
+        const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+        
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const dropdown = this.nextElementSibling;
+                dropdown.classList.toggle('show');
+                
+                // Close other dropdowns
+                dropdownToggles.forEach(otherToggle => {
+                    if (otherToggle !== toggle) {
+                        otherToggle.nextElementSibling.classList.remove('show');
+                    }
+                });
+            });
+        });
+        
+        // Close dropdowns when clicking elsewhere
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}My Bookings - SpicyFood{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-header">
+    <div class="overlay"></div>
+    <div class="hero-content">
+        <h1>Your Reservations</h1>
+        <p>Manage all your dining experiences with us</p>
+    </div>
+</section>
+
+<section class="bookings-list-section">
+    <div class="container">
+        <div class="bookings-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="header-text">
+                    <h2>Upcoming Reservations</h2>
+                    <p>View, modify or cancel your bookings</p>
+                </div>
+            </div>
+            <a href="{% url 'booking' %}" class="btn new-booking-btn">
+                <i class="fas fa-plus"></i> Book a New Table
+            </a>
+        </div>
+        
+        {% if bookings %}
+            <div class="bookings-filter">
+                <div class="filter-label">
+                    <i class="fas fa-filter"></i> Filter:
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+                </div>
+            </div>
+            
+            <div class="bookings-grid">
+                {% for booking in bookings %}
+                <div class="booking-card status-{{ booking.status|lower }}">
+                    <div class="booking-date">
+                        <div class="calendar-icon">
+                            <div class="month">{{ booking.date|date:"M" }}</div>
+                            <div class="day">{{ booking.date|date:"d" }}</div>
+                        </div>
+                        <div class="time">
+                            <i class="far fa-clock"></i> {{ booking.time|time:"g:i A" }}
+                        </div>
+                    </div>
+                    
+                    <div class="booking-content">
+                        <div class="booking-header">
+                            <h3>Reservation #{{ booking.id }}</h3>
+                            <div class="booking-status">
+                                <i class="fas fa-circle"></i> {{ booking.get_status_display }}
+                            </div>
+                        </div>
+                        
+                        <div class="booking-details">
+                            <div class="detail-item">
+                                <i class="fas fa-users"></i>
+                                <span>{{ booking.number_of_guests }} {% if booking.number_of_guests == 1 %}Guest{% else %}Guests{% endif %}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-chair"></i>
+                                <span>{{ booking.table }}</span>
+                            </div>
+                            {% if booking.special_requests %}
+                            <div class="detail-item">
+                                <i class="fas fa-comment-alt"></i>
+                                <span>Special Requests</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="booking-actions">
+                            <a href="{% url 'booking_detail' booking.id %}" class="action-btn view-btn">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if booking.status != 'CANCELLED' and booking.date >= today %}
+                            <div class="action-dropdown">
+                                <button class="action-btn more-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a href="{% url 'booking_edit' booking.id %}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'booking_cancel' booking.id %}" class="text-danger">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if booking.date == today %}
+                    <div class="booking-badge today-badge">Today</div>
+                    {% elif booking.status == 'CANCELLED' %}
+                    <div class="booking-badge cancelled-badge">Cancelled</div>
+                    {% elif booking.date < today and booking.status != 'CANCELLED' %}
+                    <div class="booking-badge past-badge">Past</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="pagination-section">
+                <div class="pagination">
+                    <a href="#" class="page-link disabled">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a href="#" class="page-link active">1</a>
+                    <a href="#" class="page-link">2</a>
+                    <a href="#" class="page-link">3</a>
+                    <a href="#" class="page-link">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-bookings">
+                <div class="empty-illustration">
+                    <i class="far fa-calendar-alt"></i>
+                </div>
+                <h3>No Reservations Found</h3>
+                <p>You don't have any bookings yet. Make your first reservation to experience our culinary delights.</p>
+                <a href="{% url 'booking' %}" class="btn primary-btn">Make Your First Booking</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Promotional Section -->
+<section class="promo-section">
+    <div class="container">
+        <div class="promo-card">
+            <div class="promo-content">
+                <h3>Exclusive Member Benefits</h3>
+                <p>Enjoy priority seating, special offers, and rewards with every visit.</p>
+                <a href="#" class="btn outline-btn">Learn More</a>
+            </div>
+            <div class="promo-image">
+                <img src="https://i.pinimg.com/736x/74/62/97/746297f074bed5db7f26cee0c1decc28.jpg" alt="Member Benefits">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const bookingCards = document.querySelectorAll('.booking-card');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                
+                bookingCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'flex';
+                    } else {
+                        if (card.classList.contains('status-' + filter)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Action dropdown functionality
+        const actionDropdowns = document.querySelectorAll('.action-dropdown');
+        
+        actionDropdowns.forEach(dropdown => {
+            const moreBtn = dropdown.querySelector('.more-btn');
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            
+            moreBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('open');
+            });
+            
+            // Close dropdown when clicking elsewhere
+            document.addEventListener('click', function() {
+                dropdownMenu.classList.remove('open');
+            });
+        });
+    });
+</script>
+{% endblock %}
