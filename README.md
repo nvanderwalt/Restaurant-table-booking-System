@@ -76,7 +76,6 @@ Represents the system's users (customers, staff, and admin).
 1. Clone the repository
    ```
    git clone https://github.com/nvanderwalt/Restaurant-table-booking-System.git
-
    cd restaurant-booking
    ```
 
