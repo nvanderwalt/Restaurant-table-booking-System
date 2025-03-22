@@ -55,18 +55,6 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'restaurant/register.html', {'form': form})
 
-# def register(request):
-#     if request.method == 'POST':
-#         form = UserRegistrationForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             username = form.cleaned_data.get('username')
-#             messages.success(request, f'Account created for {username}! You can now log in.')
-#             return redirect('login')
-#     else:
-#         form = UserRegistrationForm()
-#     return render(request, 'restaurant/register.html', {'form': form})
-
 def logout_view(request):
     logout(request)
     return redirect('index')
@@ -112,7 +100,6 @@ def booking_list(request):
 def booking_edit(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     
-    # Check if booking is in the past
     if booking.date < timezone.now().date():
         messages.error(request, "Cannot edit past bookings.")
         return redirect('booking_list')
@@ -137,7 +124,6 @@ def booking_edit(request, booking_id):
 def booking_cancel(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     
-    # Check if booking is in the past
     if booking.date < timezone.now().date():
         messages.error(request, "Cannot cancel past bookings.")
         return redirect('booking_list')
@@ -151,18 +137,4 @@ def booking_cancel(request, booking_id):
     return render(request, 'restaurant/booking_cancel.html', {'booking': booking})
 
 def booking_confirmation_view(request):
-    # Render a confirmation page after booking
     return HttpResponse("Booking Confirmed!")
-
-# Add this to views.py
-# def register(request):
-#     if request.method == 'POST':
-#         form = UserRegistrationForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             username = form.cleaned_data.get('username')
-#             messages.success(request, f'Account created for {username}! You can now log in.')
-#             return redirect('login')
-#     else:
-#         form = UserRegistrationForm()
-#     return render(request, 'restaurant/register.html', {'form': form})

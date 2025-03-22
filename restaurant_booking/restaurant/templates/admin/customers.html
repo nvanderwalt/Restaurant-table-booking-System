@@ -113,21 +113,17 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Export functionality
         const exportBtn = document.getElementById('exportCustomers');
         
         if (exportBtn) {
             exportBtn.addEventListener('click', function() {
-                // In a real application, this would trigger a CSV export
                 alert('Export functionality would be implemented here.');
             });
         }
         
-        // Auto-focus search field if there's a search term
         const searchInput = document.getElementById('customerSearch');
         if (searchInput && searchInput.value) {
             searchInput.focus();
-            // Move cursor to end of input
             const val = searchInput.value;
             searchInput.value = '';
             searchInput.value = val;

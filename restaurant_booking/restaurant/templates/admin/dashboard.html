@@ -211,7 +211,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Bookings Chart
         const ctx = document.getElementById('bookingsChart').getContext('2d');
         const bookingsChart = new Chart(ctx, {
             type: 'line',
@@ -253,7 +252,6 @@
             }
         });
         
-        // Period Selector
         const periodButtons = document.querySelectorAll('.period-btn');
         periodButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -272,7 +270,6 @@
             });
         });
         
-        // Close message alert
         const closeButtons = document.querySelectorAll('.close-message');
         closeButtons.forEach(button => {
             button.addEventListener('click', function() {

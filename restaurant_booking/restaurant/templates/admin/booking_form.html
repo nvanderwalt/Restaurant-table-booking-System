@@ -134,7 +134,6 @@
                     
                     <div class="table-availability-results" id="tableAvailabilityResults">
                         <div class="restaurant-floor-plan" id="floorPlan">
-                            <!-- This will be populated with available tables -->
                             <div class="floor-plan-placeholder">
                                 <i class="fas fa-search"></i>
                                 <p>Enter booking details and check availability to see available tables</p>
@@ -191,7 +190,6 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Customer quick add form
         const showQuickAddBtn = document.getElementById('showQuickAddForm');
         const quickAddForm = document.getElementById('quickAddForm');
         const cancelQuickAddBtn = document.getElementById('cancelQuickAdd');
@@ -232,15 +230,12 @@
                     return;
                 }
                 
-                // In a real application, you would send an AJAX request to create the customer
                 console.log(`Creating customer: ${name}, ${email}, ${phone}`);
                 
-                // For demo purposes, show a success message and reset the form
                 alert('Customer created successfully!');
                 quickAddForm.style.display = 'none';
                 showQuickAddBtn.style.display = 'block';
                 
-                // Reset form fields
                 document.getElementById('quickAddName').value = '';
                 document.getElementById('quickAddEmail').value = '';
                 document.getElementById('quickAddPhone').value = '';
@@ -262,11 +257,7 @@
                     return;
                 }
                 
-                // Clear the floor plan
                 floorPlan.innerHTML = '';
-                
-                // In a real application, you would fetch available tables via AJAX
-                // For demo purposes, we'll show a sample floor plan
                 
                 const tables = [
                     { id: 1, number: 1, capacity: 2, position: [1, 1], available: true },
@@ -277,17 +268,14 @@
                     { id: 6, number: 6, capacity: 8, position: [4, 2], available: false }
                 ];
                 
-                // Create floor plan grid
                 const grid = document.createElement('div');
                 grid.className = 'floor-plan-grid';
                 
-                // Create a 5x4 grid
                 for (let row = 0; row < 5; row++) {
                     for (let col = 0; col < 4; col++) {
                         const cell = document.createElement('div');
                         cell.className = 'floor-plan-cell';
                         
-                        // Check if there's a table at this position
                         const table = tables.find(t => t.position[0] === row && t.position[1] === col);
                         
                         if (table) {
@@ -302,15 +290,12 @@
                             
                             if (table.available) {
                                 tableElement.addEventListener('click', function() {
-                                    // Remove selection from all tables
                                     document.querySelectorAll('.table-item').forEach(el => {
                                         el.classList.remove('selected');
                                     });
                                     
-                                    // Select this table
                                     this.classList.add('selected');
                                     
-                                    // Update the select input
                                     const tableSelect = document.getElementById('{{ form.table.id_for_label }}');
                                     if (tableSelect) {
                                         tableSelect.value = this.dataset.tableId;
@@ -327,7 +312,6 @@
                 
                 floorPlan.appendChild(grid);
                 
-                // Add a legend
                 const legend = document.createElement('div');
                 legend.className = 'floor-plan-legend';
                 legend.innerHTML = `
@@ -347,19 +331,15 @@
                 
                 floorPlan.appendChild(legend);
                 
-                // Update table select options
                 const tableSelect = document.getElementById('{{ form.table.id_for_label }}');
                 if (tableSelect) {
-                    // Clear existing options
                     tableSelect.innerHTML = '';
                     
-                    // Add empty option
                     const emptyOption = document.createElement('option');
                     emptyOption.value = '';
                     emptyOption.textContent = 'Select a table';
                     tableSelect.appendChild(emptyOption);
                     
-                    // Add available tables
                     tables.filter(table => table.available).forEach(table => {
                         const option = document.createElement('option');
                         option.value = table.id;

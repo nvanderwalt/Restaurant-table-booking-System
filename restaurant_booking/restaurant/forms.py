@@ -37,7 +37,6 @@ class BookingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['date'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%d')
 
-# Admin forms
 class AdminBookingForm(forms.ModelForm):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
@@ -48,14 +47,11 @@ class AdminBookingForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set minimum date to today
         self.fields['date'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%d')
         
-        # Make fields look better in admin
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
         
-        # Add special styling for select fields
         if 'user' in self.fields:
             self.fields['user'].widget.attrs.update({'class': 'form-control select2'})
         if 'table' in self.fields:
@@ -68,14 +64,11 @@ class TableForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
             
-    # You might want to add validation to prevent duplicate table numbers
     def clean_number(self):
         number = self.cleaned_data.get('number')
-        # Check if this number already exists (but not for this instance)
         existing = Table.objects.filter(number=number)
         if self.instance.pk:
             existing = existing.exclude(pk=self.instance.pk)
@@ -91,12 +84,10 @@ class MenuForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap classes
         for field_name, field in self.fields.items():
-            if field_name != 'is_available':  # Don't add form-control to checkboxes
+            if field_name != 'is_available':
                 field.widget.attrs['class'] = 'form-control'
                 
-        # Special attributes for price field
         if 'price' in self.fields:
             self.fields['price'].widget.attrs.update({
                 'min': '0.01', 

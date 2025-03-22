@@ -175,11 +175,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Simple chart for booking history demonstration
         const ctx = document.getElementById('bookingHistoryChart').getContext('2d');
         
-        // For demonstration, we're using placeholder data
-        // In a real application, you would pass this data from the backend
         const bookingChart = new Chart(ctx, {
             type: 'line',
             data: {

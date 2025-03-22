@@ -109,19 +109,16 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Category tabs filtering
         const categoryTabs = document.querySelectorAll('.category-tab');
         const menuItems = document.querySelectorAll('.menu-item-card');
         
         categoryTabs.forEach(tab => {
             tab.addEventListener('click', function() {
-                // Update active tab
                 categoryTabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 
                 const category = this.getAttribute('data-category');
                 
-                // Filter menu items
                 menuItems.forEach(item => {
                     if (category === 'all' || item.getAttribute('data-category') === category) {
                         item.style.display = 'flex';
@@ -132,7 +129,6 @@
             });
         });
         
-        // Additional filtering with select boxes
         const categoryFilter = document.getElementById('categoryFilter');
         const availabilityFilter = document.getElementById('availabilityFilter');
         
@@ -143,12 +139,10 @@
             menuItems.forEach(item => {
                 let showItem = true;
                 
-                // Check category
                 if (categoryValue && item.getAttribute('data-category') !== categoryValue) {
                     showItem = false;
                 }
                 
-                // Check availability
                 if (availabilityValue) {
                     const isAvailable = !item.querySelector('.unavailable-badge');
                     if (availabilityValue === 'available' && !isAvailable) {
@@ -161,7 +155,6 @@
                 item.style.display = showItem ? 'flex' : 'none';
             });
             
-            // Update the active category tab to reflect the filter
             categoryTabs.forEach(tab => {
                 tab.classList.remove('active');
                 if ((tab.getAttribute('data-category') === categoryValue) || 
@@ -174,7 +167,6 @@
         categoryFilter.addEventListener('change', applyFilters);
         availabilityFilter.addEventListener('change', applyFilters);
         
-        // Dropdown toggle functionality
         const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
         
         dropdownToggles.forEach(toggle => {
@@ -183,7 +175,6 @@
                 const dropdown = this.nextElementSibling;
                 dropdown.classList.toggle('show');
                 
-                // Close other dropdowns
                 dropdownToggles.forEach(otherToggle => {
                     if (otherToggle !== toggle) {
                         otherToggle.nextElementSibling.classList.remove('show');
@@ -192,7 +183,6 @@
             });
         });
         
-        // Close dropdowns when clicking elsewhere
         document.addEventListener('click', function() {
             document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
                 dropdown.classList.remove('show');

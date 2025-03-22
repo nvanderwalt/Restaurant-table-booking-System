@@ -171,7 +171,6 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Table search functionality
         const searchInput = document.getElementById('tableSearch');
         const tableRows = document.querySelectorAll('.data-table tbody tr');
         
@@ -188,7 +187,6 @@
             });
         });
         
-        // Select all checkboxes
         const selectAllCheckbox = document.getElementById('selectAll');
         const checkboxes = document.querySelectorAll('input[name="selected[]"]');
         
@@ -198,7 +196,6 @@
             });
         });
         
-        // Filter application
         const applyFiltersBtn = document.getElementById('applyFilters');
         const clearFiltersBtn = document.getElementById('clearFilters');
         const dateFilter = document.getElementById('dateFilter');
@@ -231,7 +228,6 @@
             window.location.href = url.toString();
         });
         
-        // Bulk actions
         const bulkActionSelect = document.getElementById('bulkAction');
         const applyBulkActionBtn = document.getElementById('applyBulkAction');
         
@@ -249,15 +245,12 @@
             }
             
             if (confirm(`Are you sure you want to ${selectedAction} the selected bookings?`)) {
-                // In a real application, you would send an AJAX request here
                 console.log(`Action: ${selectedAction}, IDs: ${selectedIds.join(',')}`);
                 
-                // For demo purposes, reload the page
                 window.location.reload();
             }
         });
         
-        // Dropdown toggle
         const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
         
         dropdownToggles.forEach(toggle => {
@@ -266,7 +259,6 @@
                 const dropdown = this.nextElementSibling;
                 dropdown.classList.toggle('show');
                 
-                // Close other dropdowns
                 dropdownToggles.forEach(otherToggle => {
                     if (otherToggle !== toggle) {
                         otherToggle.nextElementSibling.classList.remove('show');
@@ -275,7 +267,6 @@
             });
         });
         
-        // Close dropdowns when clicking elsewhere
         document.addEventListener('click', function() {
             document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
                 dropdown.classList.remove('show');

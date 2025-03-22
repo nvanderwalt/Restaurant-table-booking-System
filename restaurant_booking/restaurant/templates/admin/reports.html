@@ -52,7 +52,6 @@
     </div>
 </div>
 
-<!-- Specific report content based on type -->
 {% if report_type == 'bookings' %}
 <div class="report-overview-card card">
     <div class="card-header">
@@ -315,7 +314,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Custom Date Range Toggle
         const customPeriodBtn = document.getElementById('customPeriodBtn');
         const customDateRange = document.getElementById('customDateRange');
         
@@ -326,7 +324,6 @@
             });
         }
         
-        // Export Report Button
         const exportReportBtn = document.getElementById('exportReport');
         if (exportReportBtn) {
             exportReportBtn.addEventListener('click', function() {
@@ -334,7 +331,6 @@
             });
         }
         
-        // Print Report Button
         const printReportBtn = document.getElementById('printReport');
         if (printReportBtn) {
             printReportBtn.addEventListener('click', function() {
@@ -342,9 +338,7 @@
             });
         }
         
-        // Charts based on report type
         {% if report_type == 'bookings' %}
-        // Bookings Chart
         const bookingsChartEl = document.getElementById('bookingsChart');
         if (bookingsChartEl) {
             const bookingsChart = new Chart(bookingsChartEl.getContext('2d'), {
@@ -401,7 +395,6 @@
             });
         }
         
-        // Status Breakdown Chart
         const statusChartEl = document.getElementById('statusChart');
         if (statusChartEl) {
             const statusChart = new Chart(statusChartEl.getContext('2d'), {
@@ -436,7 +429,6 @@
             });
         }
         
-        // Popular Hours Chart
         const hoursChartEl = document.getElementById('hoursChart');
         if (hoursChartEl) {
             const hoursLabels = [];
@@ -487,7 +479,6 @@
             });
         }
         {% elif report_type == 'tables' %}
-        // Tables Utilization Chart
         const tablesChartEl = document.getElementById('tablesChart');
         if (tablesChartEl) {
             const tablesChart = new Chart(tablesChartEl.getContext('2d'), {
@@ -540,7 +531,6 @@
             });
         }
         {% elif report_type == 'customers' %}
-        // Customer Growth Chart
         const customersChartEl = document.getElementById('customersChart');
         if (customersChartEl) {
             const customersChart = new Chart(customersChartEl.getContext('2d'), {

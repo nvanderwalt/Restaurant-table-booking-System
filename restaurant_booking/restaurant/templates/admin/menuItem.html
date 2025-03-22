@@ -144,7 +144,6 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Image preview functionality
         const imageInput = document.getElementById('{{ form.image.id_for_label }}');
         const imagePreview = document.getElementById('imagePreview');
         const removeImageBtn = document.getElementById('removeImage');
@@ -161,12 +160,10 @@
                     
                     reader.readAsDataURL(this.files[0]);
                     
-                    // If there's a remove image button, show it
                     if (removeImageBtn) {
                         removeImageBtn.style.display = 'inline-block';
                     }
                     
-                    // Reset the remove image field if it exists
                     if (removeImageField) {
                         removeImageField.value = 'false';
                     }
@@ -174,13 +171,10 @@
             });
         }
         
-        // Remove image functionality
         if (removeImageBtn && removeImageField) {
             removeImageBtn.addEventListener('click', function() {
-                // Clear the file input
                 imageInput.value = '';
                 
-                // Update the preview
                 imagePreview.innerHTML = `
                     <div class="no-image">
                         <i class="fas fa-camera"></i>
@@ -188,10 +182,8 @@
                     </div>
                 `;
                 
-                // Set the remove image field to true
                 removeImageField.value = 'true';
                 
-                // Hide the remove button
                 this.style.display = 'none';
             });
         }

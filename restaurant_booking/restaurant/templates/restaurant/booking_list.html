@@ -4,7 +4,6 @@
 {% block title %}My Bookings - SpicyFood{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
 <section class="page-header">
     <div class="overlay"></div>
     <div class="hero-content">
@@ -140,7 +139,6 @@
     </div>
 </section>
 
-<!-- Promotional Section -->
 <section class="promo-section">
     <div class="container">
         <div class="promo-card">
@@ -160,13 +158,11 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Filter functionality
         const filterButtons = document.querySelectorAll('.filter-btn');
         const bookingCards = document.querySelectorAll('.booking-card');
         
         filterButtons.forEach(button => {
             button.addEventListener('click', function() {
-                // Update active button
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 
@@ -186,7 +182,6 @@
             });
         });
         
-        // Action dropdown functionality
         const actionDropdowns = document.querySelectorAll('.action-dropdown');
         
         actionDropdowns.forEach(dropdown => {
@@ -198,7 +193,6 @@
                 dropdownMenu.classList.toggle('open');
             });
             
-            // Close dropdown when clicking elsewhere
             document.addEventListener('click', function() {
                 dropdownMenu.classList.remove('open');
             });

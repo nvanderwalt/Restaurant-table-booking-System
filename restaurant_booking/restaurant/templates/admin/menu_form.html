@@ -13,25 +13,21 @@
         <form method="POST">
             {% csrf_token %}
             
-            <!-- Name -->
             <div class="form-group">
                 <label for="id_name">Name</label>
                 <input type="text" name="name" value="{{ form.name.value }}" class="form-control" placeholder="Enter the name of the menu item" required>
             </div>
 
-            <!-- Description -->
             <div class="form-group">
                 <label for="id_description">Description</label>
                 <textarea name="description" class="form-control" rows="4" placeholder="Enter a description of the menu item" required>{{ form.description.value }}</textarea>
             </div>
 
-            <!-- Price -->
             <div class="form-group">
                 <label for="id_price">Price</label>
                 <input type="number" name="price" value="{{ form.price.value }}" step="0.01" class="form-control" placeholder="Enter the price of the menu item" required>
             </div>
 
-            <!-- Category -->
             <div class="form-group">
                 <label for="id_category">Category</label>
                 <select name="category" class="form-control" required>
@@ -43,13 +39,11 @@
                 </select>
             </div>
 
-            <!-- Image -->
             <div class="form-group">
                 <label for="id_image">Image Link</label>
                 <input type="text" name="image" value="{{ form.image.value }}" class="form-control" placeholder="Enter the image link for the menu item">
             </div>
 
-            <!-- Availability -->
             <div class="form-group">
                 <label for="id_is_available">Available</label>
                 <div class="custom-control custom-checkbox">
@@ -58,7 +52,6 @@
                 </div>
             </div>
 
-            <!-- Submit Button -->
             <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-block">Add Menu Item</button>
             </div>

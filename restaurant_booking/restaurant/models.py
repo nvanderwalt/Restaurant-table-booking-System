@@ -71,7 +71,6 @@ class Booking(models.Model):
         return f"Booking for {self.user.username} on {self.date} at {self.time}"
     
     def clean(self):
-        # Check if table is available at the specified date and time
         conflicting_bookings = Booking.objects.filter(
             table=self.table,
             date=self.date,
@@ -82,6 +81,5 @@ class Booking(models.Model):
         if conflicting_bookings.exists():
             raise ValidationError("This table is already booked for the selected time.")
         
-        # Check if the number of guests exceeds table capacity
         if self.number_of_guests > self.table.capacity:
             raise ValidationError("The number of guests exceeds the table capacity.")

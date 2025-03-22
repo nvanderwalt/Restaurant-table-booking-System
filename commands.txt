@@ -30,6 +30,7 @@ username = dominic
 Email address: dominicmburu034@gmail.com
 password = 1234
 
+
 migrates
 python manage.py makemigrations restaurant
 # First apply the content types migrations (which the auth app depends on)

@@ -6,13 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SpicyFood Admin{% endblock %}</title>
-    <link rel="icon" href="https://i.pinimg.com/736x/94/bf/34/94bf3444f7683e20d2b78693f09e9c31.jpg" type="image/x-icon">
+    <link rel="icon" href="{% static 'media/logo.png' %}" type="image/x-icon">
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body class="admin-body">
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -93,7 +92,6 @@
             </div>
         </aside>
         
-        <!-- Main Content -->
         <main class="admin-main">
             <header class="admin-header">
                 <div class="header-search">

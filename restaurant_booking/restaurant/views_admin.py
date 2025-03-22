@@ -1,4 +1,3 @@
-# views_admin.py
 from functools import wraps
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,7 +15,6 @@ from .forms import TableForm, MenuForm, BookingForm
 def admin_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        # Check if user is authenticated and has admin role
         if not request.user.is_authenticated or request.user.role != 'admin':
             messages.error(request, "You don't have permission to access the admin area.")
             return redirect('login')
@@ -30,35 +28,28 @@ def admin_required(view_func):
 def admin_dashboard(request):
     today = timezone.now().date()
     
-    # Get today's bookings
     todays_bookings = Booking.objects.filter(date=today).order_by('time')
     
-    # Get stats for dashboard
     today_bookings = todays_bookings.count()
     total_guests_today = sum(booking.number_of_guests for booking in todays_bookings)
     menu_items_count = Menu.objects.count()
     
-    # Get new customers this month
     first_day_of_month = today.replace(day=1)
     new_customers_this_month = CustomUser.objects.filter(date_joined__gte=first_day_of_month).count()
     
-    # Calculate percentages for progress bars
-    max_bookings_per_day = 50  # Example max capacity
+    max_bookings_per_day = 50
     today_bookings_percent = min(int(today_bookings / max_bookings_per_day * 100), 100)
     
-    max_guests_per_day = 200  # Example max capacity
+    max_guests_per_day = 200 
     guests_percent = min(int(total_guests_today / max_guests_per_day * 100), 100)
     
-    max_new_customers = 100  # Example target
+    max_new_customers = 100
     new_customers_percent = min(int(new_customers_this_month / max_new_customers * 100), 100)
     
-    # Get popular tables
     popular_tables = Table.objects.annotate(
         booking_count=Count('booking')
     ).order_by('-booking_count')[:5]
     
-    # Generate chart data
-    # For week data
     week_dates = []
     week_data = []
     week_labels = []
@@ -70,7 +61,6 @@ def admin_dashboard(request):
         week_data.append(count)
         week_labels.append(date.strftime('%a'))
     
-    # For month data
     month_dates = []
     month_data = []
     month_labels = []
@@ -82,7 +72,6 @@ def admin_dashboard(request):
         month_data.append(count)
         month_labels.append(date.strftime('%d %b'))
     
-    # Recent activities (in a real app, you'd have an Activity model)
     recent_activities = [
         {
             'type': 'booking',
@@ -112,7 +101,7 @@ def admin_dashboard(request):
     
     context = {
         'today': today,
-        'todays_bookings': todays_bookings[:5],  # Limit to 5 for dashboard
+        'todays_bookings': todays_bookings[:5], 
         'today_bookings': today_bookings,
         'today_bookings_percent': today_bookings_percent,
         'total_guests_today': total_guests_today,
@@ -138,11 +127,9 @@ def admin_dashboard(request):
 def admin_bookings(request):
     today = timezone.now().date()
     
-    # Get filter parameters
     date_filter = request.GET.get('date')
     status_filter = request.GET.get('status')
     
-    # Apply filters
     bookings = Booking.objects.all().order_by('-date', '-time')
     
     if date_filter:
@@ -155,8 +142,7 @@ def admin_bookings(request):
     if status_filter:
         bookings = bookings.filter(status=status_filter)
     
-    # Pagination
-    paginator = Paginator(bookings, 10)  # 10 bookings per page
+    paginator = Paginator(bookings, 10)
     page_number = request.GET.get('page')
     bookings_page = paginator.get_page(page_number)
     
@@ -177,14 +163,11 @@ def admin_booking_detail(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     today = timezone.now().date()
     
-    # Get other bookings by the same user
     other_bookings = Booking.objects.filter(user=booking.user).exclude(id=booking.id).order_by('-date')[:5]
     
-    # Get user booking stats
     customer_booking_count = Booking.objects.filter(user=booking.user).count()
     customer_visits = Booking.objects.filter(user=booking.user, date__lt=today).count()
     
-    # Get average party size
     user_bookings = Booking.objects.filter(user=booking.user)
     if user_bookings.exists():
         total_guests = sum(b.number_of_guests for b in user_bookings)
@@ -192,7 +175,6 @@ def admin_booking_detail(request, booking_id):
     else:
         avg_party_size = 0
     
-    # In a real app, you'd have a BookingNote model
     notes_history = []
     
     context = {
@@ -216,7 +198,6 @@ def admin_booking_add(request):
         if form.is_valid():
             booking = form.save(commit=False)
             
-            # Get the user_id from the form or request
             user_id = request.POST.get('user')
             if user_id:
                 try:
@@ -231,7 +212,6 @@ def admin_booking_add(request):
                 form.add_error(None, "Please select a user for this booking")
     else:
         form = BookingForm()
-        # Pre-populate user field if provided in URL
         initial_user_id = request.GET.get('user')
         if initial_user_id:
             try:
@@ -240,7 +220,6 @@ def admin_booking_add(request):
             except CustomUser.DoesNotExist:
                 pass
     
-    # Get all users for the dropdown
     users = CustomUser.objects.all().order_by('username')
     
     context = {
@@ -367,7 +346,6 @@ def admin_menu_edit(request, menu_id):
     if request.method == 'POST':
         form = MenuForm(request.POST, request.FILES, instance=menu_item)
         if form.is_valid():
-            # Handle image removal
             if request.POST.get('remove_image') == 'true' and menu_item.image:
                 menu_item.image = None
             
@@ -411,7 +389,6 @@ def admin_booking_notes(request, booking_id):
     
     return redirect('admin_booking_detail', booking_id=booking.id)
 
-# Add these functions to your views_admin.py file
 
 # Table Administration Views
 @login_required
@@ -463,7 +440,6 @@ def admin_table_delete(request, table_id):
     if request.method == 'POST':
         table_number = table.number
         
-        # Check if there are any bookings for this table
         bookings = Booking.objects.filter(table=table)
         if bookings.exists():
             messages.error(request, f"Cannot delete Table {table_number} because it has bookings")
@@ -486,13 +462,11 @@ def admin_table_detail(request, table_id):
     table = get_object_or_404(Table, id=table_id)
     today = timezone.now().date()
     
-    # Get upcoming bookings for this table
     upcoming_bookings = Booking.objects.filter(
         table=table,
         date__gte=today
     ).order_by('date', 'time')[:10]
     
-    # Get table utilization stats
     total_bookings = Booking.objects.filter(table=table).count()
     bookings_this_month = Booking.objects.filter(
         table=table,
@@ -500,9 +474,8 @@ def admin_table_detail(request, table_id):
         date__year=today.year
     ).count()
     
-    # Calculate availability percentage (how often the table is booked)
-    days_in_month = 30  # Approximation
-    bookings_per_day = 8  # Assuming 8 booking slots per day
+    days_in_month = 30  
+    bookings_per_day = 8
     potential_bookings = days_in_month * bookings_per_day
     
     if potential_bookings > 0:
@@ -544,7 +517,6 @@ def admin_menu_delete(request, menu_id):
 def admin_menu_duplicate(request, menu_id):
     original_item = get_object_or_404(Menu, id=menu_id)
     
-    # Create new menu item with same data but different name
     new_item = Menu.objects.create(
         name=f"Copy of {original_item.name}",
         description=original_item.description,
@@ -553,24 +525,19 @@ def admin_menu_duplicate(request, menu_id):
         is_available=original_item.is_available
     )
     
-    # Copy image if one exists
     if original_item.image:
-        # Import needed for image duplication
         from django.core.files.base import ContentFile
         from io import BytesIO
         from PIL import Image
         import os
         
-        # Open original image
         img = Image.open(original_item.image.path)
         
-        # Create new image file
         img_io = BytesIO()
         img_format = os.path.splitext(original_item.image.name)[1][1:].upper()
         img.save(img_io, format=img_format)
         img_io.seek(0)
         
-        # Save to new menu item
         new_item.image.save(
             f"copy_{original_item.image.name}",
             ContentFile(img_io.read()),
@@ -584,10 +551,8 @@ def admin_menu_duplicate(request, menu_id):
 @login_required
 @admin_required
 def admin_customers(request):
-    # Get search parameter
     search = request.GET.get('search', '')
     
-    # Get all customers (users)
     if search:
         customers = CustomUser.objects.filter(
             Q(username__icontains=search) | 
@@ -598,12 +563,10 @@ def admin_customers(request):
     else:
         customers = CustomUser.objects.all().order_by('username')
     
-    # Pagination
-    paginator = Paginator(customers, 20)  # 20 customers per page
+    paginator = Paginator(customers, 20)  
     page_number = request.GET.get('page')
     customers_page = paginator.get_page(page_number)
     
-    # Get some stats for each customer
     for customer in customers_page:
         customer.bookings_count = Booking.objects.filter(user=customer).count()
         customer.last_booking = Booking.objects.filter(user=customer).order_by('-date').first()
@@ -620,16 +583,13 @@ def admin_customers(request):
 def admin_customer_detail(request, user_id):
     customer = get_object_or_404(CustomUser, id=user_id)
     
-    # Get customer's bookings
     bookings = Booking.objects.filter(user=customer).order_by('-date')
     
-    # Get customer statistics
     bookings_count = bookings.count()
     upcoming_bookings = bookings.filter(date__gte=timezone.now().date()).count()
     completed_bookings = bookings.filter(date__lt=timezone.now().date()).count()
     cancelled_bookings = bookings.filter(status='CANCELLED').count()
     
-    # Calculate favorite table
     if bookings.exists():
         from django.db.models import Count
         favorite_table = Table.objects.filter(
@@ -640,7 +600,6 @@ def admin_customer_detail(request, user_id):
     else:
         favorite_table = None
     
-    # Calculate average party size
     if bookings.exists():
         avg_party_size = bookings.aggregate(avg=Avg('number_of_guests'))['avg']
         avg_party_size = round(avg_party_size, 1)
@@ -649,7 +608,7 @@ def admin_customer_detail(request, user_id):
     
     context = {
         'customer': customer,
-        'bookings': bookings[:10],  # Show only 10 most recent bookings
+        'bookings': bookings[:10],
         'bookings_count': bookings_count,
         'upcoming_bookings': upcoming_bookings,
         'completed_bookings': completed_bookings,
@@ -668,21 +627,19 @@ def admin_customer_detail(request, user_id):
 def admin_reports(request):
     today = timezone.now().date()
     
-    # Select report type
     report_type = request.GET.get('type', 'bookings')
     period = request.GET.get('period', 'month')
     
-    # Date range settings
     if period == 'week':
         start_date = today - timedelta(days=7)
-        date_format = '%a'  # Day abbr (Mon, Tue, etc.)
+        date_format = '%a'
     elif period == 'month':
         start_date = today - timedelta(days=30)
-        date_format = '%d %b'  # Day + Month abbr (01 Jan)
+        date_format = '%d %b'
     elif period == 'year':
         start_date = today - timedelta(days=365)
-        date_format = '%b'  # Month abbr (Jan, Feb, etc.)
-    else:  # Custom date range
+        date_format = '%b' 
+    else:  
         try:
             start_date = datetime.strptime(request.GET.get('start_date', ''), '%Y-%m-%d').date()
             end_date = datetime.strptime(request.GET.get('end_date', ''), '%Y-%m-%d').date()
@@ -692,13 +649,10 @@ def admin_reports(request):
             end_date = today
             date_format = '%d %b'
     
-    # Default end date is today unless custom range is provided
     if period != 'custom':
         end_date = today
     
-    # Prepare data based on report type
     if report_type == 'bookings':
-        # Group bookings by date
         bookings_by_date = {}
         
         date_range = []
@@ -708,39 +662,32 @@ def admin_reports(request):
             bookings_by_date[current_date] = 0
             current_date += timedelta(days=1)
         
-        # Count bookings per date
         bookings = Booking.objects.filter(date__gte=start_date, date__lte=end_date)
         for booking in bookings:
             if booking.date in bookings_by_date:
                 bookings_by_date[booking.date] += 1
         
-        # Format for the chart
         labels = [date.strftime(date_format) for date in date_range]
         data = [bookings_by_date[date] for date in date_range]
         
-        # Get some overall statistics
         total_bookings = bookings.count()
         avg_bookings_per_day = total_bookings / len(date_range) if date_range else 0
         total_guests = sum(booking.number_of_guests for booking in bookings)
         avg_guests_per_booking = total_guests / total_bookings if total_bookings else 0
         
-        # Get status breakdown
         status_counts = {
             'PENDING': bookings.filter(status='PENDING').count(),
             'CONFIRMED': bookings.filter(status='CONFIRMED').count(),
             'CANCELLED': bookings.filter(status='CANCELLED').count()
         }
         
-        # Popular times
         popular_hours = {}
         for booking in bookings:
             hour = booking.time.hour
             popular_hours[hour] = popular_hours.get(hour, 0) + 1
         
-        # Sort and get top 5 busy hours
         popular_hours = dict(sorted(popular_hours.items(), key=lambda x: x[1], reverse=True)[:5])
         
-        # Format hours for display (12-hour format)
         popular_hours_display = {}
         for hour, count in popular_hours.items():
             suffix = 'AM' if hour < 12 else 'PM'
@@ -766,7 +713,6 @@ def admin_reports(request):
         }
     
     elif report_type == 'customers':
-        # Count new customers by join date
         new_customers_by_date = {}
         
         date_range = []
@@ -776,27 +722,22 @@ def admin_reports(request):
             new_customers_by_date[current_date] = 0
             current_date += timedelta(days=1)
         
-        # Count new signups per date
         customers = CustomUser.objects.filter(date_joined__date__gte=start_date, date_joined__date__lte=end_date)
         for customer in customers:
             join_date = customer.date_joined.date()
             if join_date in new_customers_by_date:
                 new_customers_by_date[join_date] += 1
         
-        # Format for chart
         labels = [date.strftime(date_format) for date in date_range]
         data = [new_customers_by_date[date] for date in date_range]
         
-        # Get total customers
         total_customers = CustomUser.objects.count()
         new_customers = customers.count()
         
-        # Get active customers (made a booking in last 30 days)
         active_customers = CustomUser.objects.filter(
             booking__date__gte=today - timedelta(days=30)
         ).distinct().count()
         
-        # Get top customers by number of bookings
         top_customers = CustomUser.objects.annotate(
             booking_count=Count('booking')
         ).order_by('-booking_count')[:10]
@@ -821,14 +762,10 @@ def admin_reports(request):
 @login_required
 @admin_required
 def admin_settings(request):
-    # This view can be used for general settings, site configuration, etc.
     if request.method == 'POST':
-        # Process settings updates
-        # This is a placeholder for actual settings implementation
         messages.success(request, "Settings updated successfully")
         return redirect('admin_settings')
     
-    # Get some system information for display
     import platform
     import django
     
@@ -841,7 +778,6 @@ def admin_settings(request):
         'debug_mode': settings.DEBUG
     }
     
-    # Get database stats
     db_stats = {
         'total_users': CustomUser.objects.count(),
         'total_bookings': Booking.objects.count(),
